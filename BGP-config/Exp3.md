@@ -9,7 +9,7 @@ docker run -id --name sw1 frrouting/frr bash
 ```
 
 ```
-# sudo docker network create --driver bridge --subnet 172.16.0.0/24 net
+sudo docker network create --driver bridge --subnet 172.16.0.0/24 net
 ```
 
 Note: Use default docker bridge to connect vs0 and vs1, as ge2 and ge3 interfaces
@@ -33,24 +33,30 @@ sudo ip netns exec sw1-srv0 ifconfig eth0 10.0.2.1/24
 sudo ip netns exec sw1-srv0 ip route add default via 10.0.2.2
 ```
 
-```
-docker exec -it vs0 bash
-bash-5.1# ip addr add 10.0.1.2/24 dev eth1
-bash-5.1#  route add default gw 172.17.0.4
-bash-5.1# route del default gw 172.17.0.1
-
-docker exec -it vs1 bash
-bash-5.1# ip addr add 10.0.2.2/24 dev eth1
-bash-5.1#  route add default gw 172.17.0.2
-bash-5.1# route del default gw 172.17.0.1
-```
-
 Test:
 ```
 sudo ip netns exec sw0-srv0 ping 10.0.1.2
 sudo ip netns exec sw1-srv0 ping 10.0.2.2
 
 ```
+
+create veth pairs in two switch containers:
+```
+# docker inspect -f '{{.State.Pid}}' vs1
+35888
+# docker inspect -f '{{.State.Pid}}' vs0
+36017
+# ln -sfT /proc/35888/ns/net /var/run/netns/35888
+# ln -sfT /proc/36017/ns/net /var/run/netns/36017
+ip link add v-eth-vs1 type veth peer name v-eth-vs2
+ip link set v-eth-vs1 netns 35888
+ip link set v-eth-vs2 netns 36017
+ip -n 36017 addr add 172.16.0.1/24 dev v-eth-vs2
+ip -n 35888 addr add 172.16.0.2/24 dev v-eth-vs1
+ip -n 36017 link set v-eth-vs2 up
+ip -n 35888 link set v-eth-vs1 up
+```
+
 
 2. configure BGP
 ```
@@ -69,13 +75,15 @@ sudo docker exec -it vs1 bash
 5fa4220fb2f2(config-router)# neighbor ISL remote-as 65000
 5fa4220fb2f2(config-router)# neighbor ISL advertisement-interval 0
 5fa4220fb2f2(config-router)# neighbor ISL timers connect 5
-5fa4220fb2f2(config-router)# neighbor 172.17.0.2 peer-group ISL
+5fa4220fb2f2(config-router)# neighbor 172.16.0.1 peer-group ISL
 5fa4220fb2f2(config-router)# address-family ipv4 unicast
 5fa4220fb2f2(config-router-af)# neighbor ISL activate
 5fa4220fb2f2(config-router-af)# network 10.0.2.0/24
 5fa4220fb2f2(config-router-af)# network 10.0.1.0/24
+network 172.16.0.0/24
 5fa4220fb2f2(config-router-af)# maximum-paths 64
 5fa4220fb2f2(config-router-af)# exit-address-family
+# do write memory
 ```
 
 
@@ -95,13 +103,19 @@ sudo docker exec -it vs0 bash
 5fa4220fb2f2(config-router)# neighbor ISL remote-as 65001
 5fa4220fb2f2(config-router)# neighbor ISL advertisement-interval 0
 5fa4220fb2f2(config-router)# neighbor ISL timers connect 5
-5fa4220fb2f2(config-router)# neighbor 172.17.0.4 peer-group ISL
+5fa4220fb2f2(config-router)# neighbor 172.16.0.2 peer-group ISL
 5fa4220fb2f2(config-router)# address-family ipv4 unicast
 5fa4220fb2f2(config-router-af)# neighbor ISL activate
 5fa4220fb2f2(config-router-af)# network 10.0.2.0/24
 5fa4220fb2f2(config-router-af)# network 10.0.1.0/24
+network 172.16.0.0/24
 5fa4220fb2f2(config-router-af)# maximum-paths 64
 5fa4220fb2f2(config-router-af)# exit-address-family
+# do write memory
+```
+```
+# vtysh
+# show bgp summary
 ```
 
 Test:
