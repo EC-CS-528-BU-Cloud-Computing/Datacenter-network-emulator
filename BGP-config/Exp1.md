@@ -24,6 +24,13 @@ $ docker run --privileged --network container:sw --name vs -d frrouting/frr
 $ docker exec -it vs bash
 bash-5.1# ip addr add 10.0.0.2/24 dev eth1
 bash-5.1# ip addr add 10.0.1.2/24 dev eth2
+bash-5.1# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         172.17.0.1      0.0.0.0         UG    0      0        0 eth0
+10.0.0.0        0.0.0.0         255.255.255.0   U     0      0        0 eth1
+10.0.1.0        0.0.0.0         255.255.255.0   U     0      0        0 eth2
+172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 eth0
 ```
 
 4. Setup IP in the server network namespace
