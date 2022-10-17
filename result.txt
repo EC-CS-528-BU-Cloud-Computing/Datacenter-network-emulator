@@ -1,0 +1,29 @@
+bash-5.1# ip addr show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet 10.0.1.2/24 scope global lo
+       valid_lft forever preferred_lft forever
+3: veth0@if2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 3a:87:0b:2f:92:c0 brd ff:ff:ff:ff:ff:ff link-netns srv0
+29: eth0@if30: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+
+bash-5.1# vtysh -c "show ip route bgp"
+% Can't open configuration file /etc/frr/vtysh.conf due to 'No such file or directory'.
+Codes: K - kernel route, C - connected, S - static, R - RIP,
+       O - OSPF, I - IS-IS, B - BGP, E - EIGRP, N - NHRP,
+       T - Table, v - VNC, V - VNC-Direct, A - Babel, F - PBR,
+       f - OpenFabric,
+       > - selected route, * - FIB route, q - queued, r - rejected, b - backup
+       t - trapped, o - offload failure
+
+B>* 10.0.2.0/24 [20/0] via 172.17.0.3, eth0, weight 1, 00:05:15
+bash-5.1# ping 10.0.2.2
+PING 10.0.2.2 (10.0.2.2): 56 data bytes
+64 bytes from 10.0.2.2: seq=0 ttl=64 time=0.050 ms
+64 bytes from 10.0.2.2: seq=1 ttl=64 time=0.012 ms
+64 bytes from 10.0.2.2: seq=2 ttl=64 time=0.014 ms
