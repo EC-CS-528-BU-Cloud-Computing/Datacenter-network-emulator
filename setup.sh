@@ -1,2 +1,2 @@
-docker run -id --name sw --privileged frrouting/frr bash
+docker run -id --name sw --privileged -d frrouting/frr
 docker exec -it sw bash
