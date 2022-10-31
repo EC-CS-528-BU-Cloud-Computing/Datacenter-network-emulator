@@ -44,7 +44,7 @@ class ContainerManager:
         # Core
         core_id = 0
         for i in range(1, int(self.num_of_core_sw / 2) + 1):
-            for j in range(1, int(self.num_of_core_sw / 2) + 1):
+            for j in range(1, 3):
                 os.system("docker exec core-{} ip addr add 10.{}.{}.{} dev lo".format(core_id, self.k, i, j))
                 core_id += 1
         
