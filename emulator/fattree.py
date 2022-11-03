@@ -86,12 +86,12 @@ class ContainerManager:
                     os.system("sudo ip link add CA-C{}-P{}A{} type veth peer name CA-P{}A{}-C{}".format(j+x,m,i, m,i, j+x))
                     # set CA-C{}-P{}A{} up in core-{}
                     # set CA-P{}A{}-C{} up in pod-{}-agg-{}
-                    # pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(j+x)]).decode("utf-8").strip()
-                    # pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(m,i)]).decode("utf-8").strip()
-                    # os.system('sudo ip link set CA-C{}-P{}A{} netns {}'.format(j+x,m,i,int(pid1)))
-                    # os.system('sudo ip link set CA-P{}A{}-C{} netns {}'.format(m,i, j+x, int(pid2)))
-                    # os.system('sudo nsenter -t {} -n ip link set dev CA-C{}-P{}A{} up'.format(int(pid1), j+x,m,i))
-                    # os.system('sudo nsenter -t {} -n ip link set dev CA-P{}A{}-C{} up'.format(int(pid2), m,i, j+x))
+                    pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(j+x)]).decode("utf-8").strip()
+                    pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(m,i)]).decode("utf-8").strip()
+                    os.system('sudo ip link set CA-C{}-P{}A{} netns {}'.format(j+x,m,i,int(pid1)))
+                    os.system('sudo ip link set CA-P{}A{}-C{} netns {}'.format(m,i, j+x, int(pid2)))
+                    os.system('sudo nsenter -t {} -n ip link set dev CA-C{}-P{}A{} up'.format(int(pid1), j+x,m,i))
+                    os.system('sudo nsenter -t {} -n ip link set dev CA-P{}A{}-C{} up'.format(int(pid2), m,i, j+x))
                    
         # Veth pairs from agg switches to edge switches
         
