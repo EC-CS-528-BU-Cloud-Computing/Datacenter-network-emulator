@@ -21,7 +21,7 @@ class ContainerManager:
         self.k =  k
         self.client =  docker.from_env()
         self.num_of_core_sw = int((self.k * self.k) / 4)
-        self.num_of_sw_per_pod = int(self.k)
+        self.num_of_sw_per_pod = int(self.k * self.k)
         self.num_of_host_per_pod = int((self.k * self.k) / 4)
 
     def start(self):
