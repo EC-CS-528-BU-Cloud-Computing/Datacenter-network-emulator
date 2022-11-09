@@ -1,7 +1,16 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
+  <main>
+    <div :style="{ background: 'var(--color-fill-2)', padding: '28px' }" >
+    <a-layout-content>
+    <a-typography-title :heading="5">
+             About Us
+    </a-typography-title>
+    <a-typography-paragraph>
+     Team Members:  Mingji Han, Ayesha Naeem, Alex Hureaux-Perron, Muhammad Fahad Farid, Zeying Zhu
+    </a-typography-paragraph>
+  </a-layout-content>
   </div>
+  </main>
 </template>
 
 <style>
