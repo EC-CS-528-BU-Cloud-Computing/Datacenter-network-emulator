@@ -108,7 +108,7 @@ class ContainerManager:
                     os.system('sudo nsenter -t {} -n ip link set dev AE-P{}A{}-P{}E{} up'.format(int(pid1), i,j,i,m))
                     os.system('sudo nsenter -t {} -n ip link set dev AE-P{}E{}-P{}A{} up'.format(int(pid2), i,m,i,j))
                 
-        # Veth pairs from edeg switches to hosts
+        # Veth pairs from edge switches to hosts
         
         for i in range(self.k):
             for j in range(int(self.k/2)):
