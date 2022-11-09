@@ -17,7 +17,7 @@ Host runs ubuntu image.
 '''
 class ContainerManager:
     def __init__(self, k) -> None:
-        assert (k >= 4)
+        assert (k >= 4 and k % 2 == 0)
         self.k =  k
         self.client =  docker.from_env()
         self.num_of_core_sw = int((self.k * self.k) / 4)
@@ -43,9 +43,9 @@ class ContainerManager:
         # Assign loopback IPs
         # Core
         core_id = 0
-        for i in range(1, int(self.num_of_core_sw / 2) + 1):
-            for j in range(1, 3):
-                os.system("docker exec core-{} ip addr add 10.{}.{}.{} dev lo".format(core_id, self.k, i, j))
+        for i in range(1, int(self.k / 2) + 1):
+            for j in range(1, int(self.k / 2) + 1):
+                os.system("docker exec core-{} ip addr add 10.{}.{}.{} dev lo".format(core_id, self.k, j, i))
                 core_id += 1
         
         for i in range(self.k):
@@ -104,7 +104,7 @@ class ContainerManager:
                     pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(i,j)]).decode("utf-8").strip()
                     pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(i,m)]).decode("utf-8").strip()
                     os.system('sudo ip link set AE-P{}A{}-P{}E{} netns {}'.format(i,j,i,m,int(pid1)))
-                    os.system('sudo ip link set AE-P{}E{}-P{}A{} netns {}'.format(i,m,i,j int(pid2)))
+                    os.system('sudo ip link set AE-P{}E{}-P{}A{} netns {}'.format(i,m,i,j,int(pid2)))
                     os.system('sudo nsenter -t {} -n ip link set dev AE-P{}A{}-P{}E{} up'.format(int(pid1), i,j,i,m))
                     os.system('sudo nsenter -t {} -n ip link set dev AE-P{}E{}-P{}A{} up'.format(int(pid2), i,m,i,j))
                 
@@ -126,23 +126,35 @@ class ContainerManager:
     # WARNING: It will destroy all containers.
     def clean(self):
         for i in range(self.num_of_core_sw):
-            core_sw = self.client.containers.get("core-{}".format(i))
-            core_sw.stop()
-            core_sw.remove()
+            try: 
+                core_sw = self.client.containers.get("core-{}".format(i))
+                core_sw.stop()
+                core_sw.remove()
+            except: 
+                print("didn't find core-{}".format(i))
         
         for i in range(self.k):
             # Pod Switch
             for j in range(int(self.num_of_sw_per_pod / 2)):
                 # Aggregation
-                agg_sw = self.client.containers.get(name="pod-{}-agg-{}".format(i, j))
-                agg_sw.stop()
-                agg_sw.remove()
+                try: 
+                    agg_sw = self.client.containers.get("pod-{}-agg-{}".format(i, j))
+                    agg_sw.stop()
+                    agg_sw.remove()
+                except:
+                    print("didn't find pod-{}-agg-{}".format(i, j))
                 # Edge
-                edge_sw = self.client.containers.get(name="pod-{}-edge-{}".format(i, j))
-                edge_sw.stop()
-                edge_sw.remove()
+                try:
+                    edge_sw = self.client.containers.get("pod-{}-edge-{}".format(i, j))
+                    edge_sw.stop()
+                    edge_sw.remove()
+                except:
+                    print("didn't find pod-{}-edge-{}".format(i, j))
             # Host
             for j in range(self.num_of_host_per_pod):
-                host = self.client.containers.get(name="pod-{}-host-{}".format(i, j))
-                host.stop()
-                host.remove()
+                try: 
+                    host = self.client.containers.get("pod-{}-host-{}".format(i, j))
+                    host.stop()
+                    host.remove()
+                except:
+                    print("didn't find pod-{}-host-{}".format(i, j))
