@@ -24,7 +24,18 @@ export default {
     const graph = new G6.Graph({
       container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
       width: 1200, // Number，必须，图的宽度
-      height: 800, // Number，必须，图的高度
+      height: 1000, // Number，必须，图的高度
+      layout: {
+        type: 'forceAtlas2',
+        width: 1200,
+        height: 500,
+        preventOverlap: true,
+        kr: 6,
+        kg: 10
+      },
+      modes: {
+        default: ['drag-node'], // 允许拖拽画布、放缩画布、拖拽节点
+      },
     });
     graph.data(this.graph); // 读取 Step 2 中的数据源到图上
     graph.render(); 
