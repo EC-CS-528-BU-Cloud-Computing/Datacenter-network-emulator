@@ -23,15 +23,15 @@ export default {
     this.graph = response.data;
     const graph = new G6.Graph({
       container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
-      width: 1200, // Number，必须，图的宽度
-      height: 1000, // Number，必须，图的高度
+      width: 1600, // Number，必须，图的宽度
+      height: 1600, // Number，必须，图的高度
       layout: {
-        type: 'forceAtlas2',
-        width: 1200,
-        height: 500,
+        type: 'concentric',
+        center: [800, 500],
+        nodeSize: 100,  
         preventOverlap: true,
-        kr: 6,
-        kg: 10
+        clockwise: true,
+        sortBy: "weight"
       },
       modes: {
         default: ['drag-node'], // 允许拖拽画布、放缩画布、拖拽节点

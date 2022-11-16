@@ -32,14 +32,22 @@ async def topology():
     for c in client.containers.list():
         node_type = "circle"
         size = 80
-        if "host" not in c.name:
-            node_type = "rect"
-            size = [80, 60]
+        #if "host" not in c.name:
+        #    node_type = "rect"
+        #    size = [80, 60]
+        weight = 1
+        if "core" in c.name:
+            weight = 200
+        if "agg" in c.name:
+            weight = 150
+        if "edge" in c.name:
+            weight = 80
         kv["nodes"].append({
             "id": c.name,
             "label": c.name,
             "size": 80,
-            "type": node_type
+            "type": node_type,
+            "weight": weight
             })
         links_output = sp.check_output("sudo docker exec " + c.name + 
                                 " ip link show | grep UP | grep -v eth0 | grep -v lo | awk -F: '{print $2}' | awk -F@ '{print $1}' | tr -d ' '", shell=True).decode("utf-8")
