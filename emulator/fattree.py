@@ -128,8 +128,8 @@ class FatTree:
 
                     os.system('sudo nsenter -t {} -n ip link set dev ca-core-{}-pod-{}-agg-{} up'.format(int(pid_core), core_id, pod, agg))
                     os.system('sudo nsenter -t {} -n ip link set dev ca-pod-{}-agg-{}-core-{} up'.format(int(pid_agg), pod, agg, core_id))  
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-core-{}-pod-{}-agg-{}'.format(int(pid_core), 169, self.k, agg, core_id, core_id, pod, agg))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-pod-{}-agg-{}-core-{}'.format(int(pid_agg), 169, self.k, agg + self.k/2, core_id, pod, agg, core_id))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-core-{}-pod-{}-agg-{}'.format(int(pid_core), 169, self.k + pod, agg, core_id, core_id, pod, agg))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-pod-{}-agg-{}-core-{}'.format(int(pid_agg), 169, self.k + pod, agg + self.k/2, core_id, pod, agg, core_id))
 
                 core_id += 1
 
@@ -163,7 +163,7 @@ class FatTree:
 
                     os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-edge-{}-host-{} up'.format(int(pid_edge), pod, edge, host_id))
                     os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-host-{}-edge-{} up'.format(int(pid_host), pod, host_id, edge))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-pod-{}-edge-{}-host-{}'.format(int(pid_edge), 169, pod, edge, host - 2, pod, edge, host_id))
-            
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-pod-{}-edge-{}-host-{}'.format(int(pid_edge), 169, pod, edge + self.k, host - 2, pod, edge, host_id))
+                    os.system("sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-host-{}-pod-{}-edge-{}".format(int(pid_host), 169, pod, edge + self.k + self.k/2, host-2, host_id, pod, edge)
                     host_id += 1
                     
