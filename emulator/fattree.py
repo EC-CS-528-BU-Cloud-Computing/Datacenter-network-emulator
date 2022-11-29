@@ -80,6 +80,11 @@ class ContainerManager:
         # Prefix AE in names for links between Aggregation switches and Edge switches
         # Prefix EH in names for links between Edge switches and Hosts
 
+        # IP address for veths between core and agg switches
+        # Core switch veth ip address: 10.k+1+coreid.i.2
+        # Agg switch veth ip address: 10.k+1+core.id.i.1
+
+        
         for i in range(int(self.k/2)):
             for j in range(int(self.k/2)):
                 for m in range(self.k):
@@ -92,10 +97,14 @@ class ContainerManager:
                     os.system('sudo ip link set CA-C{}-P{}A{} netns {}'.format(j+x,m,i,int(pid1)))
                     os.system('sudo ip link set CA-P{}A{}-C{} netns {}'.format(m,i, j+x, int(pid2)))
                     os.system('sudo nsenter -t {} -n ip link set dev CA-C{}-P{}A{} up'.format(int(pid1), j+x,m,i))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/24 dev CA-C{}-P{}A{}'.format(int(pid1),10,(k+1+j+x),m,2 j+x,m,i))
                     os.system('sudo nsenter -t {} -n ip link set dev CA-P{}A{}-C{} up'.format(int(pid2), m,i, j+x))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/24 dev CA-P{}A{}-C{}'.format(int(pid2), 10,(k+1+j+x),m,1,m,i, j+x))
                    
         # Veth pairs from agg switches to edge switches
-        
+        # IP address for veths between agg and core switches
+        # Agg switch veth ip address: 172.16+podid.(k/2)*aggswitchid +i.2 ==> i in [1-(k/2)]
+        # Edge switch veth ip address: 172.16+podid.(k/2)*aggswitchid +i.1
         for i in range(self.k): 
             for j in range(int(self.k/2)): 
                 for m in range(int(self.k/2)):
@@ -105,11 +114,17 @@ class ContainerManager:
                     pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(i,j)]).decode("utf-8").strip()
                     pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(i,m)]).decode("utf-8").strip()
                     os.system('sudo ip link set AE-P{}A{}-P{}E{} netns {}'.format(i,j,i,m,int(pid1)))
-                    os.system('sudo ip link set AE-P{}E{}-P{}A{} netns {}'.format(i,m,i,j,int(pid2)))
+                    os.system('sudo ip link set AE-P{}E{}-P{}A{} netns {}'.format(i,m,i,j, int(pid2)))
                     os.system('sudo nsenter -t {} -n ip link set dev AE-P{}A{}-P{}E{} up'.format(int(pid1), i,j,i,m))
+                    os.system('sudo nsenter -t {} -n ip addr add 172.{}.{}.{}/24 dev AE-P{}A{}-P{}E{}'.format(int(pid1),(16+i),((int(k/2)*j)+m),2 i,j,i,m))
                     os.system('sudo nsenter -t {} -n ip link set dev AE-P{}E{}-P{}A{} up'.format(int(pid2), i,m,i,j))
+                    os.system('sudo nsenter -t {} -n ip addr add 172.{}.{}.{}/24 dev AE-P{}E{}-P{}A{}'.format(int(pid2),(16+i),((int(k/2)*j)+m),1 i,j,i,m))
+
                 
         # Veth pairs from edge switches to hosts
+        # IP address for veths between edge and host switches
+        # Edge switch veth ip address: 192.168+podid.edgeswitchid.(k/2)+1
+        # host veth ip address: 192.168+podid.edgeswitchid.hostid
         
         for i in range(self.k):
             for j in range(int(self.k/2)):
