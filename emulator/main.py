@@ -7,5 +7,5 @@ if __name__ == "__main__":
     mgr.addLinks()
     mgr.BGPConfig()
     # mgr.distroyContainers()
-    print("Hello FatTree")
+    print("Hello FatTree!")
     
