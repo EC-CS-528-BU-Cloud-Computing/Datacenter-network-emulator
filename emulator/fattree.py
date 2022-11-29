@@ -122,14 +122,14 @@ class FatTree:
                 pid_core = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(core_id)]).decode("utf-8").strip()
                 for pod in range(0, self.k):
                     pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
-                    os.system("sudo ip link add ca-core-{} type veth peer name ca-pod-{}-agg-{}".format(core_id, pod, agg))
-                    os.system("sudo ip link set ca-core-{} netns {}".format(core_id, int(pid_core)))
-                    os.system('sudo ip link set ca-pod-{}-agg-{} netns {}'.format(pod, agg, int(pid_agg)))
+                    os.system("sudo ip link add ca-core-{}-pod-{}-agg-{} type veth peer name ca-pod-{}-agg-{}-core-{}".format(core_id, pod, agg, pod, agg, core_id))
+                    os.system("sudo ip link set ca-core-{}-pod-{}-agg-{} netns {}".format(core_id, pod, agg, int(pid_core)))
+                    os.system('sudo ip link set ca-pod-{}-agg-{}-core-{} netns {}'.format(pod, agg, core_id, int(pid_agg)))
 
-                    os.system('sudo nsenter -t {} -n ip link set dev ca-core-{} up'.format(int(pid_core), core_id))
-                    os.system('sudo nsenter -t {} -n ip link set dev ca-pod-{}-agg-{} up'.format(int(pid_agg), pod, agg))  
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-core-{}'.format(int(pid_core), 169, self.k, agg, core_id, core_id))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-pod-{}-agg-{}'.format(int(pid_agg), 169, self.k, agg + self.k/2, core_id, pod, agg))
+                    os.system('sudo nsenter -t {} -n ip link set dev ca-core-{}-pod-{}-agg-{} up'.format(int(pid_core), core_id, pod, agg))
+                    os.system('sudo nsenter -t {} -n ip link set dev ca-pod-{}-agg-{}-core-{} up'.format(int(pid_agg), pod, agg, core_id))  
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-core-{}-pod-{}-agg-{}'.format(int(pid_core), 169, self.k, agg, core_id, core_id, pod, agg))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-pod-{}-agg-{}-core-{}'.format(int(pid_agg), 169, self.k, agg + self.k/2, core_id, pod, agg, core_id))
 
                 core_id += 1
 
@@ -139,14 +139,14 @@ class FatTree:
                 pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
                 for edge in range(0, self.k / 2):
                     pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
-                    os.system("sudo ip link add ae-pod-{}-agg-{} type veth peer name ae-pod-{}-edge-{}".format(pod, agg, pod, edge))
-                    os.system('sudo ip link set ae-pod-{}-agg-{} netns {}'.format(pod, agg, int(pid_agg)))
-                    os.system("sudo ip link set ae-pod-{}-edge-{} netns {}".format(pod, edge, int(pid_edge)))
+                    os.system("sudo ip link add ae-pod-{}-agg-{}-edge-{} type veth peer name ae-pod-{}-edge-{}-agg-{}".format(pod, agg, edge, pod, edge, agg))
+                    os.system('sudo ip link set ae-pod-{}-agg-{}-edge-{} netns {}'.format(pod, agg, edge, int(pid_agg)))
+                    os.system("sudo ip link set ae-pod-{}-edge-{}-agg-{} netns {}".format(pod, edge, agg, int(pid_edge)))
 
-                    os.system('sudo nsenter -t {} -n ip link set dev ae-pod-{}-agg-{} up'.format(int(pid_agg), pod, agg))
-                    os.system('sudo nsenter -t {} -n ip link set dev ae-pod-{}-edge-{} up'.format(int(pid_edge), pod, edge))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-pod-{}-agg-{}'.format(int(pid_agg), 169, pod, agg + self.k/2, edge, pod, agg))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-pod-{}-edge-{}'.format(int(pid_edge), 169, pod, edge, agg+self.k/2, pod, edge))
+                    os.system('sudo nsenter -t {} -n ip link set dev ae-pod-{}-agg-{}-edge-{} up'.format(int(pid_agg), pod, agg, edge))
+                    os.system('sudo nsenter -t {} -n ip link set dev ae-pod-{}-edge-{}-agg-{} up'.format(int(pid_edge), pod, edge, agg))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-pod-{}-agg-{}-edge-{}'.format(int(pid_agg), 169, pod, agg + self.k/2, edge, pod, agg, edge))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-pod-{}-edge-{}-agg-{}'.format(int(pid_edge), 169, pod, edge, agg+self.k/2, pod, edge, agg))
 
 
 
@@ -157,13 +157,13 @@ class FatTree:
                 pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
                 for host in range(2, self.k/2+2):
                     pid_host = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(pod, host_id)]).decode("utf-8").strip()
-                    os.system("sudo ip link add eh-pod-{}-edge-{} type veth peer name eh-pod-{}-host-{}".format(pod, edge, pod, host_id))
-                    os.system('sudo ip link set eh-pod-{}-edge-{} netns {}'.format(pod, edge, int(pid_edge)))
-                    os.system('sudo ip link set eh-pod-{}-host-{} netns {}'.format(pod, host_id, int(pid_host)))
+                    os.system("sudo ip link add eh-pod-{}-edge-{}-host-{} type veth peer name eh-pod-{}-host-{}-edge-{}".format(pod, edge, host_id, pod, host_id, edge))
+                    os.system('sudo ip link set eh-pod-{}-edge-{}-host-{} netns {}'.format(pod, edge, host_id, int(pid_edge)))
+                    os.system('sudo ip link set eh-pod-{}-host-{}-edge-{} netns {}'.format(pod, host_id, edge, int(pid_host)))
 
-                    os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-edge-{} up'.format(int(pid_edge), pod, edge))
-                    os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-host-{} up'.format(int(pid_host), pod, host_id))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-pod-{}-edge-{}'.format(int(pid_edge), 169, pod, edge, host-2, pod, edge))
+                    os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-edge-{}-host-{} up'.format(int(pid_edge), pod, edge, host_id))
+                    os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-host-{}-edge-{} up'.format(int(pid_host), pod, host_id, edge))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-pod-{}-edge-{}-host-{}'.format(int(pid_edge), 169, pod, edge, host - 2, pod, edge, host_id))
             
                     host_id += 1
                     

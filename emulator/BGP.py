@@ -3,9 +3,19 @@ from fattree import *
 class BGP(FatTree):
     def __init__(self, k) -> None:
         super(BGP, self).__init__(k)
+        self.frr_bgp_path = "/etc/frr/bgpd.conf"
+
+    def gen_bgpd_conf(asn, ip_lo, neighbor_list, ):
+        with open(self.tmp_file_path) as f:
+            f.write("timers bgp 3 9\n")
+            for i in range(len(neighbor_list)):
+                f.write("neighbor " + neighbor_list[i] + "remote-as " + "\n")
+                
 
     def genCoreConfig(x, y, core_id, asn):
-        pass
+        neighbor_list = []
+
+        gen_bgpd_conf(asn, "{}.{}.{}.{}".format(10, self.k, x, y), neighbor_list)
     
     def genAggConfig(pod, agg, asn):
         pass
