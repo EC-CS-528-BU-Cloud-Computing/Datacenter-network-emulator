@@ -16,16 +16,16 @@ Switch runs sonic-frr images.
 Host runs ubuntu image.
 
 '''
-class ContainerManager:
+class FatTree:
     def __init__(self, k) -> None:
         assert (k >= 4 and k % 2 == 0)
-        self.k =  k
+        self.k = k
         self.client =  docker.from_env()
         self.num_of_core_sw = int((self.k * self.k) / 4)
         self.num_of_sw_per_pod = int(self.k)
         self.num_of_host_per_pod = int((self.k * self.k) / 4)
 
-    def start(self):
+    def createContainers(self):
         # Start containers
         # Core
         for i in range(self.num_of_core_sw):
@@ -71,76 +71,9 @@ class ContainerManager:
                     os.system("docker exec -it pod-{}-host-{} apt install -y -q iproute2".format(i, host_id))
                     os.system("docker exec -it pod-{}-host-{} ip addr add 10.{}.{}.{} dev lo".format(i, host_id, i, j, h))
                     host_id += 1
-                    
-    def connect(self):
 
-        # Veth pairs from core switches to pod-agg switches
-        # veth links have names of the type CA-C{core_switch_id}-P{pod_id}A{agg_swicth_id} e.g CA0C0-P0A0 and CA0P0A0-C0
-        # Prefix CA in names for links between Core switches and Aggregation switches
-        # Prefix AE in names for links between Aggregation switches and Edge switches
-        # Prefix EH in names for links between Edge switches and Hosts
-
-        # IP address for veths between core and agg switches
-        # Core switch veth ip address: 10.k+1+coreid.i.2
-        # Agg switch veth ip address: 10.k+1+core.id.i.1
-
-        
-        for i in range(int(self.k/2)):
-            for j in range(int(self.k/2)):
-                for m in range(self.k):
-                    x = i*(int(self.k/2))
-                    os.system("sudo ip link add CA-C{}-P{}A{} type veth peer name CA-P{}A{}-C{}".format(j+x,m,i, m,i, j+x))
-                    # set CA-C{}-P{}A{} up in core-{}
-                    # set CA-P{}A{}-C{} up in pod-{}-agg-{}
-                    pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(j+x)]).decode("utf-8").strip()
-                    pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(m,i)]).decode("utf-8").strip()
-                    os.system('sudo ip link set CA-C{}-P{}A{} netns {}'.format(j+x,m,i,int(pid1)))
-                    os.system('sudo ip link set CA-P{}A{}-C{} netns {}'.format(m,i, j+x, int(pid2)))
-                    os.system('sudo nsenter -t {} -n ip link set dev CA-C{}-P{}A{} up'.format(int(pid1), j+x,m,i))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/24 dev CA-C{}-P{}A{}'.format(int(pid1),10,(k+1+j+x),m,2 j+x,m,i))
-                    os.system('sudo nsenter -t {} -n ip link set dev CA-P{}A{}-C{} up'.format(int(pid2), m,i, j+x))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/24 dev CA-P{}A{}-C{}'.format(int(pid2), 10,(k+1+j+x),m,1,m,i, j+x))
-                   
-        # Veth pairs from agg switches to edge switches
-        # IP address for veths between agg and core switches
-        # Agg switch veth ip address: 172.16+podid.(k/2)*aggswitchid +i.2 ==> i in [1-(k/2)]
-        # Edge switch veth ip address: 172.16+podid.(k/2)*aggswitchid +i.1
-        for i in range(self.k): 
-            for j in range(int(self.k/2)): 
-                for m in range(int(self.k/2)):
-                    os.system("sudo ip link add AE-P{}A{}-P{}E{} type veth peer name AE-P{}E{}-P{}A{}".format(i,j,i,m,i,m,i,j))
-                    # set AE-P{}A{}-P{}E{} up in pod-{}-agg-{}
-                    # set AE-P{}E{}-P{}A{} up in pod-{}-edge-{}
-                    pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(i,j)]).decode("utf-8").strip()
-                    pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(i,m)]).decode("utf-8").strip()
-                    os.system('sudo ip link set AE-P{}A{}-P{}E{} netns {}'.format(i,j,i,m,int(pid1)))
-                    os.system('sudo ip link set AE-P{}E{}-P{}A{} netns {}'.format(i,m,i,j, int(pid2)))
-                    os.system('sudo nsenter -t {} -n ip link set dev AE-P{}A{}-P{}E{} up'.format(int(pid1), i,j,i,m))
-                    os.system('sudo nsenter -t {} -n ip addr add 172.{}.{}.{}/24 dev AE-P{}A{}-P{}E{}'.format(int(pid1),(16+i),((int(k/2)*j)+m),2 i,j,i,m))
-                    os.system('sudo nsenter -t {} -n ip link set dev AE-P{}E{}-P{}A{} up'.format(int(pid2), i,m,i,j))
-                    os.system('sudo nsenter -t {} -n ip addr add 172.{}.{}.{}/24 dev AE-P{}E{}-P{}A{}'.format(int(pid2),(16+i),((int(k/2)*j)+m),1 i,j,i,m))
-
-                
-        # Veth pairs from edge switches to hosts
-        # IP address for veths between edge and host switches
-        # Edge switch veth ip address: 192.168+podid.edgeswitchid.(k/2)+1
-        # host veth ip address: 192.168+podid.edgeswitchid.hostid
-        
-        for i in range(self.k):
-            for j in range(int(self.k/2)):
-                for m in range(int(self.k/2)):         
-                    os.system("sudo ip link add EH-P{}E{}-P{}H{} type veth peer name EH-P{}H{}-P{}E{}".format(i,j,i,m+(j*int(self.k/2)),i,m+(j*int(self.k/2)), i, j ))
-                    # set EH-P{}E{}-P{}H{} up in pod-{}-edge-{}
-                    # set EH-P{}H{}-P{}E{} up in pod-{}-host-{}
-                    pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(i,j)]).decode("utf-8").strip()
-                    pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(i,m+(j*int(self.k/2)))]).decode("utf-8").strip()
-                    os.system('sudo ip link set EH-P{}E{}-P{}H{} netns {}'.format(i,j,i,m+(j*int(self.k/2)),int(pid1)))
-                    os.system('sudo ip link set EH-P{}H{}-P{}E{} netns {}'.format(i,m+(j*int(self.k/2)), i, j, int(pid2)))
-                    os.system('sudo nsenter -t {} -n ip link set dev EH-P{}E{}-P{}H{} up'.format(int(pid1), i,j,i,m+(j*int(self.k/2))))
-                    os.system('sudo nsenter -t {} -n ip link set dev EH-P{}H{}-P{}E{} up'.format(int(pid2), i,m+(j*int(self.k/2)), i, j))
-            
     # WARNING: It will destroy all containers.
-    def clean(self):
+    def distroyContainers(self):
         for i in range(self.num_of_core_sw):
             try: 
                 core_sw = self.client.containers.get("core-{}".format(i))
@@ -174,3 +107,63 @@ class ContainerManager:
                     host.remove()
                 except:
                     print("didn't find pod-{}-host-{}".format(i, j))
+
+    def addLinks(self):
+        
+        # This function add veth pairs between containers and assign IP addresses to veth interfaces
+        # Interface address subnet 169.0.0.0/8
+        # Routers and hosts loopback interface address subnet 10.0.0.0/8 -- based on fattree paper
+
+        # Add links between core switches and aggregation switches
+        core_id = 0
+        for x in range(1, self.k / 2 + 1):
+            agg = x + self.k / 2 - 1
+            for y in range(1, self.k / 2 + 1):
+                pid_core = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(core_id)]).decode("utf-8").strip()
+                for pod in range(0, self.k):
+                    pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
+                    os.system("sudo ip link add ca-core-{} type veth peer name ca-pod-{}-agg-{}".format(core_id, pod, agg))
+                    os.system("sudo ip link set ca-core-{} netns {}".format(core_id, int(pid_core)))
+                    os.system('sudo ip link set ca-pod-{}-agg-{} netns {}'.format(pod, agg, int(pid_agg)))
+
+                    os.system('sudo nsenter -t {} -n ip link set dev ca-core-{} up'.format(int(pid_core), core_id))
+                    os.system('sudo nsenter -t {} -n ip link set dev ca-pod-{}-agg-{} up'.format(int(pid_agg), pod, agg))  
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-core-{}'.format(int(pid_core), 169, self.k, agg, core_id, core_id))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-pod-{}-agg-{}'.format(int(pid_agg), 169, self.k, agg + self.k/2, core_id, pod, agg))
+
+                core_id += 1
+
+        # Add links between aggregation switches and edge switches in each pod
+        for pod in range(0, self.k):
+            for agg in range(0, self.k / 2):
+                pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
+                for edge in range(0, self.k / 2):
+                    pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
+                    os.system("sudo ip link add ae-pod-{}-agg-{} type veth peer name ae-pod-{}-edge-{}".format(pod, agg, pod, edge))
+                    os.system('sudo ip link set ae-pod-{}-agg-{} netns {}'.format(pod, agg, int(pid_agg)))
+                    os.system("sudo ip link set ae-pod-{}-edge-{} netns {}".format(pod, edge, int(pid_edge)))
+
+                    os.system('sudo nsenter -t {} -n ip link set dev ae-pod-{}-agg-{} up'.format(int(pid_agg), pod, agg))
+                    os.system('sudo nsenter -t {} -n ip link set dev ae-pod-{}-edge-{} up'.format(int(pid_edge), pod, edge))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-pod-{}-agg-{}'.format(int(pid_agg), 169, pod, agg + self.k/2, edge, pod, agg))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-pod-{}-edge-{}'.format(int(pid_edge), 169, pod, edge, agg+self.k/2, pod, edge))
+
+
+
+        # Add links between edge switches and hosts in each pod
+        for pod in range(0, self.k):
+            host_id = 0
+            for edge in range(0, self.k / 2):
+                pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
+                for host in range(2, self.k/2+2):
+                    pid_host = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(pod, host_id)]).decode("utf-8").strip()
+                    os.system("sudo ip link add eh-pod-{}-edge-{} type veth peer name eh-pod-{}-host-{}".format(pod, edge, pod, host_id))
+                    os.system('sudo ip link set eh-pod-{}-edge-{} netns {}'.format(pod, edge, int(pid_edge)))
+                    os.system('sudo ip link set eh-pod-{}-host-{} netns {}'.format(pod, host_id, int(pid_host)))
+
+                    os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-edge-{} up'.format(int(pid_edge), pod, edge))
+                    os.system('sudo nsenter -t {} -n ip link set dev eh-pod-{}-host-{} up'.format(int(pid_host), pod, host_id))
+                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-pod-{}-edge-{}'.format(int(pid_edge), 169, pod, edge, host-2, pod, edge))
+            
+                    host_id += 1
+                    
