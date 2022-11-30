@@ -18,7 +18,7 @@ Host runs ubuntu image.
 '''
 class FatTree:
     def __init__(self, k) -> None:
-        assert (k >= 4 and k % 2 == 0)
+        assert (k >= 2 and k % 2 == 0)
         self.k = k
         self.client =  docker.from_env()
         self.num_of_core_sw = int((self.k * self.k) / 4)
@@ -46,7 +46,7 @@ class FatTree:
                 os.system("docker exec -it pod-{}-host-{} apt update".format(i, j))
                 os.system("docker exec -it pod-{}-host-{} apt install dialog apt-utils -y".format(i, j))
                 os.system("docker exec -it pod-{}-host-{} apt install -y -q net-tools".format(i, j))
-                os.system("docker exec -it pod-{}-host-{} apt install -y -q iproute2".format(i, j))
+                os.system("docker exec -it pod-{}-host-{} apt install -y -q inetutils-ping".format(i, j))
         
     # WARNING: It will destroy all containers.
     def distroyContainers(self):
@@ -139,10 +139,14 @@ class FatTree:
                     os.system("sudo ip link set ca-c-{}-p-{}-a-{} netns {}".format(core_id, pod, agg, int(pid_core)))
                     os.system('sudo ip link set ca-p-{}-a-{}-c-{} netns {}'.format(pod, agg, core_id, int(pid_agg)))
 
-                    os.system('sudo nsenter -t {} -n ip link set dev ca-c-{}-p-{}-a-{} up'.format(int(pid_core), core_id, pod, agg))
-                    os.system('sudo nsenter -t {} -n ip link set dev ca-p-{}-a-{}-c-{} up'.format(int(pid_agg), pod, agg, core_id))  
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-c-{}-p-{}-a-{}'.format(int(pid_core), 169, self.k + pod, agg, core_id, core_id, pod, agg))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ca-p-{}-a-{}-c-{}'.format(int(pid_agg), 169, self.k + pod, agg + self.num_of_half_pod_sw, core_id, pod, agg, core_id))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ca-c-{}-p-{}-a-{}'.format(int(pid_core), 169, self.k + pod, agg, core_id, core_id, pod, agg))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ca-p-{}-a-{}-c-{}'.format(int(pid_agg), 169, self.k + pod, agg + self.num_of_half_pod_sw, core_id, pod, agg, core_id))
+
+                    os.system('sudo ip -n {} link set dev ca-c-{}-p-{}-a-{} up'.format(int(pid_core), core_id, pod, agg))
+                    os.system('sudo ip -n {} link set dev ca-p-{}-a-{}-c-{} up'.format(int(pid_agg), pod, agg, core_id))  
+                   
+                    print('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ca-c-{}-p-{}-a-{}'.format(int(pid_core), 169, self.k + pod, agg, core_id, core_id, pod, agg))
+                    print('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ca-p-{}-a-{}-c-{}'.format(int(pid_agg), 169, self.k + pod, agg + self.num_of_half_pod_sw, core_id, pod, agg, core_id))
 
                 core_id += 1
         print("finish setting up links between core switches and aggregation switches.")
@@ -151,6 +155,7 @@ class FatTree:
         for pod in range(0, self.k):
             for agg in range(0, self.num_of_half_pod_sw):
                 pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
+                os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_agg, pid_agg))
                 for edge in range(0, self.num_of_half_pod_sw):
                     pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
                     os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_edge, pid_edge))
@@ -158,10 +163,14 @@ class FatTree:
                     os.system('sudo ip link set ae-p-{}-a-{}-e-{} netns {}'.format(pod, agg, edge, int(pid_agg)))
                     os.system("sudo ip link set ae-p-{}-e-{}-a-{} netns {}".format(pod, edge, agg, int(pid_edge)))
 
-                    os.system('sudo nsenter -t {} -n ip link set dev ae-p-{}-a-{}-e-{} up'.format(int(pid_agg), pod, agg, edge))
-                    os.system('sudo nsenter -t {} -n ip link set dev ae-p-{}-e-{}-a-{} up'.format(int(pid_edge), pod, edge, agg))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, agg + self.num_of_half_pod_sw, edge, pod, agg, edge))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, edge, agg+self.num_of_half_pod_sw, pod, edge, agg))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, agg + self.num_of_half_pod_sw, edge, pod, agg, edge))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, edge, agg+self.num_of_half_pod_sw, pod, edge, agg))
+
+                    os.system('sudo ip -n {} link set dev ae-p-{}-a-{}-e-{} up'.format(int(pid_agg), pod, agg, edge))
+                    os.system('sudo ip -n {} link set dev ae-p-{}-e-{}-a-{} up'.format(int(pid_edge), pod, edge, agg))
+                    
+                    print('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, agg + self.num_of_half_pod_sw, edge, pod, agg, edge))
+                    print('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, edge, agg+self.num_of_half_pod_sw, pod, edge, agg))
 
         print("finish setting up links between aggregation switches and edge switches.")
 
@@ -170,6 +179,7 @@ class FatTree:
             host_id = 0
             for edge in range(0, self.num_of_half_pod_sw):
                 pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
+                os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_edge, pid_edge))
                 for host in range(2, self.num_of_half_pod_sw + 2):
                     pid_host = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(pod, host_id)]).decode("utf-8").strip()
                     os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_host, pid_host))
@@ -177,10 +187,14 @@ class FatTree:
                     os.system('sudo ip link set eh-p-{}-e-{}-h-{} netns {}'.format(pod, edge, host_id, int(pid_edge)))
                     os.system('sudo ip link set eh-p-{}-h-{}-e-{} netns {}'.format(pod, host_id, edge, int(pid_host)))
 
-                    os.system('sudo nsenter -t {} -n ip link set dev eh-p-{}-e-{}-h-{} up'.format(int(pid_edge), pod, edge, host_id))
-                    os.system('sudo nsenter -t {} -n ip link set dev eh-p-{}-h-{}-e-{} up'.format(int(pid_host), pod, host_id, edge))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-p-{}-e-{}-h-{}'.format(int(pid_edge), 169, pod, edge + self.k, host - 2, pod, edge, host_id))
-                    os.system("sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/8 dev eh-p-{}-h-{}-e-{}".format(int(pid_host), 169, pod, edge + self.k + self.num_of_half_pod_sw, host-2, pod, host_id, edge))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev eh-p-{}-e-{}-h-{}'.format(int(pid_edge), 169, pod, edge + self.k, host - 2, pod, edge, host_id))
+                    os.system("sudo ip -n {} addr add {}.{}.{}.{}/8 dev eh-p-{}-h-{}-e-{}".format(int(pid_host), 169, pod, edge + self.k + self.num_of_half_pod_sw, host-2, pod, host_id, edge))
+
+                    os.system('sudo ip -n {} link set dev eh-p-{}-e-{}-h-{} up'.format(int(pid_edge), pod, edge, host_id))
+                    os.system('sudo ip -n {} link set dev eh-p-{}-h-{}-e-{} up'.format(int(pid_host), pod, host_id, edge))
+                    
+                    print('sudo ip -n {} addr add {}.{}.{}.{}/8 dev eh-p-{}-e-{}-h-{}'.format(int(pid_edge), 169, pod, edge + self.k, host - 2, pod, edge, host_id))
+                    print("sudo ip -n {} addr add {}.{}.{}.{}/8 dev eh-p-{}-h-{}-e-{}".format(int(pid_host), 169, pod, edge + self.k + self.num_of_half_pod_sw, host-2, pod, host_id, edge))
                     host_id += 1
 
         print("finish setting up links between edge switches and hosts.")

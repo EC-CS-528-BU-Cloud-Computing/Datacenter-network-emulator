@@ -11,6 +11,7 @@ class BGP(FatTree):
             f.write("router bgp " + str(asn) + "\n")
             f.write("   bgp router-id " + ip_lo + "\n")
             f.write("   bgp log-neighbor-changes\n")
+            f.write("   no bgp ebgp-requires-policy\n")
             f.write("   timers bgp 3 9\n")
             f.write("   neighbor peer-group ISL\n")
             f.write("   neighbor ISL advertisement-interval 0\n")
