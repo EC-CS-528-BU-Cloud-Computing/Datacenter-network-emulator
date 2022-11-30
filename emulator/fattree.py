@@ -46,6 +46,7 @@ class FatTree:
                 os.system("docker exec -it pod-{}-host-{} apt update".format(i, j))
                 os.system("docker exec -it pod-{}-host-{} apt install dialog apt-utils -y".format(i, j))
                 os.system("docker exec -it pod-{}-host-{} apt install -y -q net-tools".format(i, j))
+                os.system("docker exec -it pod-{}-host-{} apt install -y -q iproute2".format(i, j))
                 os.system("docker exec -it pod-{}-host-{} apt install -y -q inetutils-ping".format(i, j))
         
     # WARNING: It will destroy all containers.
@@ -129,10 +130,10 @@ class FatTree:
             for y in range(1, self.num_of_half_pod_sw + 1):
                 pid_core = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(core_id)]).decode("utf-8").strip()
                 os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_core, pid_core))
-                # print("core-{}".format(core_id), "pid =", pid_core)
+                print("core-{}".format(core_id), "pid =", pid_core)
                 for pod in range(0, self.k):
                     pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
-                    # print("pod-{}-agg-{}".format(pod, agg), "pid =", pid_agg)
+                    print("pod-{}-agg-{}".format(pod, agg), "pid =", pid_agg)
                     os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_agg, pid_agg))
                     
                     os.system("sudo ip link add ca-c-{}-p-{}-a-{} type veth peer name ca-p-{}-a-{}-c-{}".format(core_id, pod, agg, pod, agg, core_id))
