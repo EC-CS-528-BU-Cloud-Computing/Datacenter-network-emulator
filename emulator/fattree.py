@@ -135,8 +135,8 @@ class FatTree:
                     os.system("sudo ip link set ca-c-{}-p-{}-a-{} netns {}".format(core_id, pod, agg, int(pid_core)))
                     os.system('sudo ip link set ca-p-{}-a-{}-c-{} netns {}'.format(pod, agg, core_id, int(pid_agg)))
 
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ca-c-{}-p-{}-a-{}'.format(int(pid_core), 169, self.k + pod, agg, core_id, core_id, pod, agg))
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ca-p-{}-a-{}-c-{}'.format(int(pid_agg), 169, self.k + pod, agg + self.num_of_half_pod_sw, core_id, pod, agg, core_id))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ca-c-{}-p-{}-a-{}'.format(int(pid_core), 169, self.k + core_id, pod, 1, core_id, pod, agg))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ca-p-{}-a-{}-c-{}'.format(int(pid_agg), 169, self.k + core_id, pod, 2, pod, agg, core_id))
 
                     os.system('sudo ip -n {} link set dev ca-c-{}-p-{}-a-{} up'.format(int(pid_core), core_id, pod, agg))
                     os.system('sudo ip -n {} link set dev ca-p-{}-a-{}-c-{} up'.format(int(pid_agg), pod, agg, core_id))  
@@ -146,6 +146,7 @@ class FatTree:
 
         # Add links between aggregation switches and edge switches in each pod
         for pod in range(0, self.k):
+            port_id = 1
             for agg in range(0, self.num_of_half_pod_sw):
                 pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
                 os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_agg, pid_agg))
@@ -156,11 +157,12 @@ class FatTree:
                     os.system('sudo ip link set ae-p-{}-a-{}-e-{} netns {}'.format(pod, agg, edge, int(pid_agg)))
                     os.system("sudo ip link set ae-p-{}-e-{}-a-{} netns {}".format(pod, edge, agg, int(pid_edge)))
 
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, agg + self.num_of_half_pod_sw, edge, pod, agg, edge))
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/8 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, edge, agg+self.num_of_half_pod_sw, pod, edge, agg))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, port_id, 1, pod, agg, edge))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, port_id, 2, pod, edge, agg))
 
                     os.system('sudo ip -n {} link set dev ae-p-{}-a-{}-e-{} up'.format(int(pid_agg), pod, agg, edge))
                     os.system('sudo ip -n {} link set dev ae-p-{}-e-{}-a-{} up'.format(int(pid_edge), pod, edge, agg))
+                    port_id += 1
                     
                  
 
