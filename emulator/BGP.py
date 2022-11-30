@@ -25,6 +25,8 @@ class BGP(FatTree):
             
             if asn == 65534:
                 f.write("       network " + ip_lo + "/32\n")
+            elif (asn - 65000) % 20 == 0:
+                f.write("       network " + ip_lo + "/32\n")
             else:
                 f.write("       network " + ip_lo + "/24\n")
             f.write("       maximum-paths 64\n")
@@ -33,7 +35,7 @@ class BGP(FatTree):
     def genCoreConfig(self, x, y, core_id, asn):
         neighbor_list = []
         agg = x + self.num_of_half_pod_sw - 1
-        ip_lo = "10.{}.{}.{}".format(self.k, x, y)
+        ip_lo = "15.{}.{}.{}".format(self.k, x, y)
         for pod in range(0, self.k):
             ip = "169.{}.{}.{}".format(self.k + pod, agg, core_id)
             asn_agg = 65000 + pod * 20
@@ -44,7 +46,7 @@ class BGP(FatTree):
     
     def genAggConfig(self, pod, agg, asn):
         neighbor_list = []
-        ip_lo = "10.{}.{}.1".format(pod, self.num_of_half_pod_sw + agg)
+        ip_lo = "15.{}.{}.1".format(pod, self.num_of_half_pod_sw + agg)
         for edge in range(0, self.num_of_half_pod_sw):
             ip = "169.{}.{}.{}".format(pod, edge, self.num_of_half_pod_sw + agg)
             asn_edge = 65000 + pod * 20 + edge + 1
@@ -60,7 +62,7 @@ class BGP(FatTree):
     
     def genEdgeConfig(self, pod, edge, asn):
         neighbor_list = []
-        ip_lo = "10.{}.{}.1".format(pod, edge)
+        ip_lo = "15.{}.{}.1".format(pod, edge)
         for agg in range(0, self.num_of_half_pod_sw):
             ip = "169.{}.{}.{}".format(pod, edge, agg+self.num_of_half_pod_sw)
             asn_agg = 65000 + pod * 20

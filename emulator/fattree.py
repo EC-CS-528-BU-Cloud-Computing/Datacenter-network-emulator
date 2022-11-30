@@ -90,8 +90,8 @@ class FatTree:
         core_id = 0
         for i in range(1, int(self.k / 2) + 1):
             for j in range(1, int(self.k / 2) + 1):
-                os.system("docker exec core-{} ip addr add 10.{}.{}.{}/32 dev lo".format(core_id, self.k, j, i))
-                print("core-{}".format(core_id), "lo addr:", "10.{}.{}.{}/32".format(self.k, j, i))
+                os.system("docker exec core-{} ip addr add 15.{}.{}.{} dev lo".format(core_id, self.k, j, i))
+                print("core-{}".format(core_id), "lo addr:", "15.{}.{}.{}".format(self.k, j, i))
                 core_id += 1
         
         for i in range(self.k):
@@ -99,19 +99,19 @@ class FatTree:
             # Pod Switch
             # Aggregation
             for j in range(0, int(self.k / 2)):
-                os.system("docker exec pod-{}-agg-{} ip addr add 10.{}.{}.1/24 dev lo".format(i, j, i, j + int(self.k / 2)))
-                print("pod-{}-agg-{}".format(i, j), "lo addr:", "10.{}.{}.1/24".format(i, j + int(self.k / 2)))
+                os.system("docker exec pod-{}-agg-{} ip addr add 15.{}.{}.1 dev lo".format(i, j, i, j + int(self.k / 2)))
+                print("pod-{}-agg-{}".format(i, j), "lo addr:", "15.{}.{}.1".format(i, j + int(self.k / 2)))
             # Edge
             for j in range(0, int(self.k / 2)):
-                os.system("docker exec pod-{}-edge-{} ip addr add 10.{}.{}.1/24 dev lo".format(i, j, i, j))
-                print("pod-{}-edge-{}".format(i, j), "lo addr:", "10.{}.{}.1/24".format(i, j))
+                os.system("docker exec pod-{}-edge-{} ip addr add 15.{}.{}.1 dev lo".format(i, j, i, j))
+                print("pod-{}-edge-{}".format(i, j), "lo addr:", "15.{}.{}.1".format(i, j))
             
             # Host
             host_id = 0
             for j in range(int(self.k / 2)):
                 for h in range(2, int(self.k / 2) + 2):
-                    os.system("docker exec -it pod-{}-host-{} ip addr add 10.{}.{}.{}/24 dev lo".format(i, host_id, i, j, h))
-                    print("pod-{}-host-{}".format(i, host_id), "lo addr:", "10.{}.{}.{}/24".format(i, j, h))
+                    os.system("docker exec -it pod-{}-host-{} ip addr add 15.{}.{}.{} dev lo".format(i, host_id, i, j, h))
+                    print("pod-{}-host-{}".format(i, host_id), "lo addr:", "15.{}.{}.{}".format(i, j, h))
                     host_id += 1
         print("finish assigning loopback interface ip addresses.")
 
@@ -120,7 +120,7 @@ class FatTree:
         
         # This function add veth pairs between containers and assign IP addresses to veth interfaces
         # Interface address subnet 169.0.0.0/8
-        # Routers and hosts loopback interface address subnet 10.0.0.0/8 -- based on fattree paper
+        # Routers and hosts loopback interface address subnet 15.0.0.0/8 -- based on fattree paper
 
         # Add links between core switches and aggregation switches
         core_id = 0
