@@ -71,7 +71,7 @@ class ContainerManager:
                     os.system("docker exec -it pod-{}-host-{} apt install -y -q iproute2".format(i, host_id))
                     os.system("docker exec -it pod-{}-host-{} ip addr add 10.{}.{}.{} dev lo".format(i, host_id, i, j, h))
                     host_id += 1
-                    
+
     def connect(self):
 
         # Veth pairs from core switches to pod-agg switches

@@ -1,0 +1,193 @@
+EH-P3H3-P3E1
+Edge and host: pod-3-host-3 to pod-3-edge-1
+EH-P3H2-P3E1
+Edge and host: pod-3-host-2 to pod-3-edge-1
+EH-P3H1-P3E0
+Edge and host: pod-3-host-1 to pod-3-edge-0
+EH-P3H0-P3E0
+Edge and host: pod-3-host-0 to pod-3-edge-0
+AE-P3E1-P3A0
+Edge and host: pod-3-edge-1 to pod-3-agg-0
+AE-P3E1-P3A1
+Edge and host: pod-3-edge-1 to pod-3-agg-1
+EH-P3E1-P3H2
+Edge and host: pod-3-edge-1 to pod-3-host-2
+EH-P3E1-P3H3
+Edge and host: pod-3-edge-1 to pod-3-host-3
+CA-P3A1-C2
+Core and aggregation: pod-3-agg-1 to core-2
+CA-P3A1-C3
+Core and aggregation: pod-3-agg-1 to core-3
+AE-P3A1-P3E0
+Edge and host: pod-3-agg-1 to pod-3-edge-0
+AE-P3A1-P3E1
+Edge and host: pod-3-agg-1 to pod-3-edge-1
+AE-P3E0-P3A0
+Edge and host: pod-3-edge-0 to pod-3-agg-0
+AE-P3E0-P3A1
+Edge and host: pod-3-edge-0 to pod-3-agg-1
+EH-P3E0-P3H0
+Edge and host: pod-3-edge-0 to pod-3-host-0
+EH-P3E0-P3H1
+Edge and host: pod-3-edge-0 to pod-3-host-1
+CA-P3A0-C0
+Core and aggregation: pod-3-agg-0 to core-0
+CA-P3A0-C1
+Core and aggregation: pod-3-agg-0 to core-1
+AE-P3A0-P3E0
+Edge and host: pod-3-agg-0 to pod-3-edge-0
+AE-P3A0-P3E1
+Edge and host: pod-3-agg-0 to pod-3-edge-1
+EH-P2H3-P2E1
+Edge and host: pod-2-host-3 to pod-2-edge-1
+EH-P2H2-P2E1
+Edge and host: pod-2-host-2 to pod-2-edge-1
+EH-P2H1-P2E0
+Edge and host: pod-2-host-1 to pod-2-edge-0
+EH-P2H0-P2E0
+Edge and host: pod-2-host-0 to pod-2-edge-0
+AE-P2E1-P2A0
+Edge and host: pod-2-edge-1 to pod-2-agg-0
+AE-P2E1-P2A1
+Edge and host: pod-2-edge-1 to pod-2-agg-1
+EH-P2E1-P2H2
+Edge and host: pod-2-edge-1 to pod-2-host-2
+EH-P2E1-P2H3
+Edge and host: pod-2-edge-1 to pod-2-host-3
+CA-P2A1-C2
+Core and aggregation: pod-2-agg-1 to core-2
+CA-P2A1-C3
+Core and aggregation: pod-2-agg-1 to core-3
+AE-P2A1-P2E0
+Edge and host: pod-2-agg-1 to pod-2-edge-0
+AE-P2A1-P2E1
+Edge and host: pod-2-agg-1 to pod-2-edge-1
+AE-P2E0-P2A0
+Edge and host: pod-2-edge-0 to pod-2-agg-0
+AE-P2E0-P2A1
+Edge and host: pod-2-edge-0 to pod-2-agg-1
+EH-P2E0-P2H0
+Edge and host: pod-2-edge-0 to pod-2-host-0
+EH-P2E0-P2H1
+Edge and host: pod-2-edge-0 to pod-2-host-1
+CA-P2A0-C0
+Core and aggregation: pod-2-agg-0 to core-0
+CA-P2A0-C1
+Core and aggregation: pod-2-agg-0 to core-1
+AE-P2A0-P2E0
+Edge and host: pod-2-agg-0 to pod-2-edge-0
+AE-P2A0-P2E1
+Edge and host: pod-2-agg-0 to pod-2-edge-1
+EH-P1H3-P1E1
+Edge and host: pod-1-host-3 to pod-1-edge-1
+EH-P1H2-P1E1
+Edge and host: pod-1-host-2 to pod-1-edge-1
+EH-P1H1-P1E0
+Edge and host: pod-1-host-1 to pod-1-edge-0
+EH-P1H0-P1E0
+Edge and host: pod-1-host-0 to pod-1-edge-0
+AE-P1E1-P1A0
+Edge and host: pod-1-edge-1 to pod-1-agg-0
+AE-P1E1-P1A1
+Edge and host: pod-1-edge-1 to pod-1-agg-1
+EH-P1E1-P1H2
+Edge and host: pod-1-edge-1 to pod-1-host-2
+EH-P1E1-P1H3
+Edge and host: pod-1-edge-1 to pod-1-host-3
+CA-P1A1-C2
+Core and aggregation: pod-1-agg-1 to core-2
+CA-P1A1-C3
+Core and aggregation: pod-1-agg-1 to core-3
+AE-P1A1-P1E0
+Edge and host: pod-1-agg-1 to pod-1-edge-0
+AE-P1A1-P1E1
+Edge and host: pod-1-agg-1 to pod-1-edge-1
+AE-P1E0-P1A0
+Edge and host: pod-1-edge-0 to pod-1-agg-0
+AE-P1E0-P1A1
+Edge and host: pod-1-edge-0 to pod-1-agg-1
+EH-P1E0-P1H0
+Edge and host: pod-1-edge-0 to pod-1-host-0
+EH-P1E0-P1H1
+Edge and host: pod-1-edge-0 to pod-1-host-1
+CA-P1A0-C0
+Core and aggregation: pod-1-agg-0 to core-0
+CA-P1A0-C1
+Core and aggregation: pod-1-agg-0 to core-1
+AE-P1A0-P1E0
+Edge and host: pod-1-agg-0 to pod-1-edge-0
+AE-P1A0-P1E1
+Edge and host: pod-1-agg-0 to pod-1-edge-1
+EH-P0H3-P0E1
+Edge and host: pod-0-host-3 to pod-0-edge-1
+EH-P0H2-P0E1
+Edge and host: pod-0-host-2 to pod-0-edge-1
+EH-P0H1-P0E0
+Edge and host: pod-0-host-1 to pod-0-edge-0
+EH-P0H0-P0E0
+Edge and host: pod-0-host-0 to pod-0-edge-0
+AE-P0E1-P0A0
+Edge and host: pod-0-edge-1 to pod-0-agg-0
+AE-P0E1-P0A1
+Edge and host: pod-0-edge-1 to pod-0-agg-1
+EH-P0E1-P0H2
+Edge and host: pod-0-edge-1 to pod-0-host-2
+EH-P0E1-P0H3
+Edge and host: pod-0-edge-1 to pod-0-host-3
+CA-P0A1-C2
+Core and aggregation: pod-0-agg-1 to core-2
+CA-P0A1-C3
+Core and aggregation: pod-0-agg-1 to core-3
+AE-P0A1-P0E0
+Edge and host: pod-0-agg-1 to pod-0-edge-0
+AE-P0A1-P0E1
+Edge and host: pod-0-agg-1 to pod-0-edge-1
+AE-P0E0-P0A0
+Edge and host: pod-0-edge-0 to pod-0-agg-0
+AE-P0E0-P0A1
+Edge and host: pod-0-edge-0 to pod-0-agg-1
+EH-P0E0-P0H0
+Edge and host: pod-0-edge-0 to pod-0-host-0
+EH-P0E0-P0H1
+Edge and host: pod-0-edge-0 to pod-0-host-1
+CA-P0A0-C0
+Core and aggregation: pod-0-agg-0 to core-0
+CA-P0A0-C1
+Core and aggregation: pod-0-agg-0 to core-1
+AE-P0A0-P0E0
+Edge and host: pod-0-agg-0 to pod-0-edge-0
+AE-P0A0-P0E1
+Edge and host: pod-0-agg-0 to pod-0-edge-1
+CA-C3-P0A1
+Core and aggregation: core-3 to pod-0-agg-1
+CA-C3-P1A1
+Core and aggregation: core-3 to pod-1-agg-1
+CA-C3-P2A1
+Core and aggregation: core-3 to pod-2-agg-1
+CA-C3-P3A1
+Core and aggregation: core-3 to pod-3-agg-1
+CA-C2-P0A1
+Core and aggregation: core-2 to pod-0-agg-1
+CA-C2-P1A1
+Core and aggregation: core-2 to pod-1-agg-1
+CA-C2-P2A1
+Core and aggregation: core-2 to pod-2-agg-1
+CA-C2-P3A1
+Core and aggregation: core-2 to pod-3-agg-1
+CA-C1-P0A0
+Core and aggregation: core-1 to pod-0-agg-0
+CA-C1-P1A0
+Core and aggregation: core-1 to pod-1-agg-0
+CA-C1-P2A0
+Core and aggregation: core-1 to pod-2-agg-0
+CA-C1-P3A0
+Core and aggregation: core-1 to pod-3-agg-0
+CA-C0-P0A0
+Core and aggregation: core-0 to pod-0-agg-0
+CA-C0-P1A0
+Core and aggregation: core-0 to pod-1-agg-0
+CA-C0-P2A0
+Core and aggregation: core-0 to pod-2-agg-0
+CA-C0-P3A0
+Core and aggregation: core-0 to pod-3-agg-0
+[{'source': 'pod-3-host-3', 'target': 'pod-3-edge-1'}, {'source': 'pod-3-host-2', 'target': 'pod-3-edge-1'}, {'source': 'pod-3-host-1', 'target': 'pod-3-edge-0'}, {'source': 'pod-3-host-0', 'target': 'pod-3-edge-0'}, {'source': 'pod-3-edge-1', 'target': 'pod-3-agg-0'}, {'source': 'pod-3-edge-1', 'target': 'pod-3-agg-1'}, {'source': 'pod-3-edge-1', 'target': 'pod-3-host-2'}, {'source': 'pod-3-edge-1', 'target': 'pod-3-host-3'}, {'source': 'pod-3-agg-1', 'target': 'core-2'}, {'source': 'pod-3-agg-1', 'target': 'core-3'}, {'source': 'pod-3-agg-1', 'target': 'pod-3-edge-0'}, {'source': 'pod-3-agg-1', 'target': 'pod-3-edge-1'}, {'source': 'pod-3-edge-0', 'target': 'pod-3-agg-0'}, {'source': 'pod-3-edge-0', 'target': 'pod-3-agg-1'}, {'source': 'pod-3-edge-0', 'target': 'pod-3-host-0'}, {'source': 'pod-3-edge-0', 'target': 'pod-3-host-1'}, {'source': 'pod-3-agg-0', 'target': 'core-0'}, {'source': 'pod-3-agg-0', 'target': 'core-1'}, {'source': 'pod-3-agg-0', 'target': 'pod-3-edge-0'}, {'source': 'pod-3-agg-0', 'target': 'pod-3-edge-1'}, {'source': 'pod-2-host-3', 'target': 'pod-2-edge-1'}, {'source': 'pod-2-host-2', 'target': 'pod-2-edge-1'}, {'source': 'pod-2-host-1', 'target': 'pod-2-edge-0'}, {'source': 'pod-2-host-0', 'target': 'pod-2-edge-0'}, {'source': 'pod-2-edge-1', 'target': 'pod-2-agg-0'}, {'source': 'pod-2-edge-1', 'target': 'pod-2-agg-1'}, {'source': 'pod-2-edge-1', 'target': 'pod-2-host-2'}, {'source': 'pod-2-edge-1', 'target': 'pod-2-host-3'}, {'source': 'pod-2-agg-1', 'target': 'core-2'}, {'source': 'pod-2-agg-1', 'target': 'core-3'}, {'source': 'pod-2-agg-1', 'target': 'pod-2-edge-0'}, {'source': 'pod-2-agg-1', 'target': 'pod-2-edge-1'}, {'source': 'pod-2-edge-0', 'target': 'pod-2-agg-0'}, {'source': 'pod-2-edge-0', 'target': 'pod-2-agg-1'}, {'source': 'pod-2-edge-0', 'target': 'pod-2-host-0'}, {'source': 'pod-2-edge-0', 'target': 'pod-2-host-1'}, {'source': 'pod-2-agg-0', 'target': 'core-0'}, {'source': 'pod-2-agg-0', 'target': 'core-1'}, {'source': 'pod-2-agg-0', 'target': 'pod-2-edge-0'}, {'source': 'pod-2-agg-0', 'target': 'pod-2-edge-1'}, {'source': 'pod-1-host-3', 'target': 'pod-1-edge-1'}, {'source': 'pod-1-host-2', 'target': 'pod-1-edge-1'}, {'source': 'pod-1-host-1', 'target': 'pod-1-edge-0'}, {'source': 'pod-1-host-0', 'target': 'pod-1-edge-0'}, {'source': 'pod-1-edge-1', 'target': 'pod-1-agg-0'}, {'source': 'pod-1-edge-1', 'target': 'pod-1-agg-1'}, {'source': 'pod-1-edge-1', 'target': 'pod-1-host-2'}, {'source': 'pod-1-edge-1', 'target': 'pod-1-host-3'}, {'source': 'pod-1-agg-1', 'target': 'core-2'}, {'source': 'pod-1-agg-1', 'target': 'core-3'}, {'source': 'pod-1-agg-1', 'target': 'pod-1-edge-0'}, {'source': 'pod-1-agg-1', 'target': 'pod-1-edge-1'}, {'source': 'pod-1-edge-0', 'target': 'pod-1-agg-0'}, {'source': 'pod-1-edge-0', 'target': 'pod-1-agg-1'}, {'source': 'pod-1-edge-0', 'target': 'pod-1-host-0'}, {'source': 'pod-1-edge-0', 'target': 'pod-1-host-1'}, {'source': 'pod-1-agg-0', 'target': 'core-0'}, {'source': 'pod-1-agg-0', 'target': 'core-1'}, {'source': 'pod-1-agg-0', 'target': 'pod-1-edge-0'}, {'source': 'pod-1-agg-0', 'target': 'pod-1-edge-1'}, {'source': 'pod-0-host-3', 'target': 'pod-0-edge-1'}, {'source': 'pod-0-host-2', 'target': 'pod-0-edge-1'}, {'source': 'pod-0-host-1', 'target': 'pod-0-edge-0'}, {'source': 'pod-0-host-0', 'target': 'pod-0-edge-0'}, {'source': 'pod-0-edge-1', 'target': 'pod-0-agg-0'}, {'source': 'pod-0-edge-1', 'target': 'pod-0-agg-1'}, {'source': 'pod-0-edge-1', 'target': 'pod-0-host-2'}, {'source': 'pod-0-edge-1', 'target': 'pod-0-host-3'}, {'source': 'pod-0-agg-1', 'target': 'core-2'}, {'source': 'pod-0-agg-1', 'target': 'core-3'}, {'source': 'pod-0-agg-1', 'target': 'pod-0-edge-0'}, {'source': 'pod-0-agg-1', 'target': 'pod-0-edge-1'}, {'source': 'pod-0-edge-0', 'target': 'pod-0-agg-0'}, {'source': 'pod-0-edge-0', 'target': 'pod-0-agg-1'}, {'source': 'pod-0-edge-0', 'target': 'pod-0-host-0'}, {'source': 'pod-0-edge-0', 'target': 'pod-0-host-1'}, {'source': 'pod-0-agg-0', 'target': 'core-0'}, {'source': 'pod-0-agg-0', 'target': 'core-1'}, {'source': 'pod-0-agg-0', 'target': 'pod-0-edge-0'}, {'source': 'pod-0-agg-0', 'target': 'pod-0-edge-1'}, {'source': 'core-3', 'target': 'pod-0-agg-1'}, {'source': 'core-3', 'target': 'pod-1-agg-1'}, {'source': 'core-3', 'target': 'pod-2-agg-1'}, {'source': 'core-3', 'target': 'pod-3-agg-1'}, {'source': 'core-2', 'target': 'pod-0-agg-1'}, {'source': 'core-2', 'target': 'pod-1-agg-1'}, {'source': 'core-2', 'target': 'pod-2-agg-1'}, {'source': 'core-2', 'target': 'pod-3-agg-1'}, {'source': 'core-1', 'target': 'pod-0-agg-0'}, {'source': 'core-1', 'target': 'pod-1-agg-0'}, {'source': 'core-1', 'target': 'pod-2-agg-0'}, {'source': 'core-1', 'target': 'pod-3-agg-0'}, {'source': 'core-0', 'target': 'pod-0-agg-0'}, {'source': 'core-0', 'target': 'pod-1-agg-0'}, {'source': 'core-0', 'target': 'pod-2-agg-0'}, {'source': 'core-0', 'target': 'pod-3-agg-0'}]
