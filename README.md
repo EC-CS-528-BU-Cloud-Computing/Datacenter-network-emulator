@@ -20,10 +20,11 @@ Roles in this project include datacenter network emulator, network configuration
 
 ## 3.   Scope and Features Of The Project:
 
-The Scope places a boundary around the solution by detailing the range of features and functions of the project. This section helps to clarify the solution scope and can explicitly state what will not be delivered as well.
+The project aims at generating a  dataceneter network emulator using the Fat Tree topology. For the purpose of this project we will be extending the topology to include 16 nodes which can be tested using the PingMesh topology.
 
-It should be specific enough that you can determine that e.g. feature A is in-scope, while feature B is out-of-scope.
+Initially, for testing connectivity, PingMesh will use ICMP Pings to test if the nodes are connected within the system. As an extension a TCP/IP Ping will be sent to ensure the connectivity of the system. The project does not require the implementation of PingMesh from scratch but an extension from existing users can be provided.
 
+A visual representation of the topology will be generated to easily assess the topology of various nodes in the system. We will be using frameworks such as iftree that provide a neat representation of the network topology.
 ** **
 
 ## 4. Solution Concept
@@ -42,7 +43,7 @@ This section discusses the implications and reasons of the design decisions made
 
 ## 5. Acceptance criteria
 
-This section discusses the minimum acceptance criteria at the end of the project and stretch goals.
+Implementation of a FatTree topology including the use of BGP to route data within the topology.
 
 ## 6.  Release Planning:
 
@@ -54,12 +55,10 @@ Release planning section describes how the project will deliver incremental sets
 
 Remember that you can always add features at the end of the semester, but you can't go back in time and gain back time you spent on features that you couldn't complete.
 
-** **
-
-For more help on markdown, see
-https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
-
-** **
 ## References
-
+* https://sonic-net.github.io/SONiC/
+* https://www.microsoft.com/en-us/research/wp-content/uploads/2016/11/pingmesh_sigcomm2015.pdf
+* https://cseweb.ucsd.edu//~vahdat/papers/sigcomm08.pdf
+* https://www.microsoft.com/en-us/research/wp-content/uploads/2017/10/p599-liu.pdf
+* https://docs.jetstream-cloud.org/attachments/bgp-in-the-data-center.pdf
 
