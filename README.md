@@ -53,7 +53,7 @@ Release planning section describes how the project will deliver incremental sets
 
 ## General comments
 
-Remember that you can always add features at the end of the semester, but you can't go back in time and gain back time you spent on features that you couldn't complete.
+The project successfully builds the network topologies and can be visually represented in a tree-like topology.
 
 ## References
 * https://sonic-net.github.io/SONiC/
@@ -61,4 +61,5 @@ Remember that you can always add features at the end of the semester, but you ca
 * https://cseweb.ucsd.edu//~vahdat/papers/sigcomm08.pdf
 * https://www.microsoft.com/en-us/research/wp-content/uploads/2017/10/p599-liu.pdf
 * https://docs.jetstream-cloud.org/attachments/bgp-in-the-data-center.pdf
+* https://github.com/rafayopen/pingmesh
 
