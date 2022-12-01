@@ -1,0 +1,15 @@
+ip prefix-list DC_LOCAL_SUBNET 5 permit 10.1.0.0/16 le 26
+ip prefix-list DC_LOCAL_SUBNET 10 permit 10.0.254.0/24 le 32
+route-map ACCEPT_DC_LOCAL permit 10
+    match ip-address DC_LOCAL_SUBNET
+
+router bgp 65000
+    bgp router-id 10.0.254.1
+    neighbor peer-group ISL
+    neighbor ISL remote-as external
+    neighbor swp51 interface peer-group ISL
+    neighbor swp52 interface peer-group ISL
+    address-family ipv4 unicast
+        neighbor ISL activate
+        redistribute connected route-map ACCEPT_DC_LOCAL
+    

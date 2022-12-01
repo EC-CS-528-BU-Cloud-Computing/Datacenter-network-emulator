@@ -16,131 +16,54 @@ Switch runs sonic-frr images.
 Host runs ubuntu image.
 
 '''
-class ContainerManager:
+class FatTree:
     def __init__(self, k) -> None:
-        assert (k >= 4 and k % 2 == 0)
-        self.k =  k
+        assert (k >= 2 and k <= 18 and k % 2 == 0)
+        self.k = k
         self.client =  docker.from_env()
         self.num_of_core_sw = int((self.k * self.k) / 4)
         self.num_of_sw_per_pod = int(self.k)
         self.num_of_host_per_pod = int((self.k * self.k) / 4)
+        self.num_of_half_pod_sw = int(self.k / 2)
 
-    def start(self):
+    def createContainers(self):
+
+        # Create host base image
+
+
         # Start containers
         # Core
         for i in range(self.num_of_core_sw):
-            self.client.containers.run("frrouting/frr" ,detach=True, init=True, name="core-{}".format(i), privileged=True)
+            self.client.containers.run("frrouting/frr:latest" ,detach=True, init=True, name="core-{}".format(i), privileged=True)
        
         for i in range(self.k):
             # Pod Switch
             for j in range(int(self.num_of_sw_per_pod / 2)):
                 # Aggregation
-                self.client.containers.run("frrouting/frr" ,detach=True, init=True, name="pod-{}-agg-{}".format(i, j), privileged=True)
+                self.client.containers.run("frrouting/frr:latest" ,detach=True, init=True, name="pod-{}-agg-{}".format(i, j), privileged=True)
                 # Edge
-                self.client.containers.run("frrouting/frr" ,detach=True, init=True, name="pod-{}-edge-{}".format(i, j), privileged=True)
+                self.client.containers.run("frrouting/frr:latest" ,detach=True, init=True, name="pod-{}-edge-{}".format(i, j), privileged=True)
             # Host
             for j in range(self.num_of_host_per_pod):
-                self.client.containers.run("ubuntu", detach=True, init=True, tty=True, name="pod-{}-host-{}".format(i, j), privileged=True)
-        # Assign loopback IPs
-        # Core
-        core_id = 0
-        for i in range(1, int(self.k / 2) + 1):
-            for j in range(1, int(self.k / 2) + 1):
-                os.system("docker exec core-{} ip addr add 10.{}.{}.{} dev lo".format(core_id, self.k, j, i))
-                core_id += 1
+                self.client.containers.run("ubuntu_net:Dockerfile", detach=True, init=True, tty=True, name="pod-{}-host-{}".format(i, j), privileged=True)
+               
         
-        for i in range(self.k):
-            
-            # Pod Switch
-            # Aggregation
-            for j in range(0, int(self.k / 2)):
-                os.system("docker exec pod-{}-agg-{} ip addr add 10.{}.{}.1 dev lo".format(i, j, i, j + int(self.k / 2)))
-            # Edge
-            for j in range(0, int(self.k / 2)):
-                os.system("docker exec pod-{}-edge-{} ip addr add 10.{}.{}.1 dev lo".format(i, j, i, j))
-            
-            # Host
-            
-            host_id = 0
-            for j in range(int(self.k / 2)):
-                for h in range(2, int(self.k / 2) + 2):
-                #  os.system("docker exec -it pod-{}-host-{} echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections".format(i, host_id))
-                    os.system("docker exec -it pod-{}-host-{} apt update".format(i, host_id))
-                    os.system("docker exec -it pod-{}-host-{} apt install dialog apt-utils -y".format(i, host_id))
-                    os.system("docker exec -it pod-{}-host-{} apt install -y -q net-tools".format(i, host_id))
-                    os.system("docker exec -it pod-{}-host-{} apt install -y -q iproute2".format(i, host_id))
-                    os.system("docker exec -it pod-{}-host-{} ip addr add 10.{}.{}.{} dev lo".format(i, host_id, i, j, h))
-                    host_id += 1
-
-    def connect(self):
-
-        # Veth pairs from core switches to pod-agg switches
-        # veth links have names of the type CA-C{core_switch_id}-P{pod_id}A{agg_swicth_id} e.g CA0C0-P0A0 and CA0P0A0-C0
-        # Prefix CA in names for links between Core switches and Aggregation switches
-        # Prefix AE in names for links between Aggregation switches and Edge switches
-        # Prefix EH in names for links between Edge switches and Hosts
-
-        # IP address for veths between core and agg switches
-        # Core switch veth ip address: 10.k+1+coreid.i.2
-        # Agg switch veth ip address: 10.k+1+core.id.i.1
-
-        
-        for i in range(int(self.k/2)):
-            for j in range(int(self.k/2)):
-                for m in range(self.k):
-                    x = i*(int(self.k/2))
-                    os.system("sudo ip link add CA-C{}-P{}A{} type veth peer name CA-P{}A{}-C{}".format(j+x,m,i, m,i, j+x))
-                    # set CA-C{}-P{}A{} up in core-{}
-                    # set CA-P{}A{}-C{} up in pod-{}-agg-{}
-                    pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(j+x)]).decode("utf-8").strip()
-                    pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(m,i)]).decode("utf-8").strip()
-                    os.system('sudo ip link set CA-C{}-P{}A{} netns {}'.format(j+x,m,i,int(pid1)))
-                    os.system('sudo ip link set CA-P{}A{}-C{} netns {}'.format(m,i, j+x, int(pid2)))
-                    os.system('sudo nsenter -t {} -n ip link set dev CA-C{}-P{}A{} up'.format(int(pid1), j+x,m,i))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/24 dev CA-C{}-P{}A{}'.format(int(pid1),10,(k+1+j+x),m,2 j+x,m,i))
-                    os.system('sudo nsenter -t {} -n ip link set dev CA-P{}A{}-C{} up'.format(int(pid2), m,i, j+x))
-                    os.system('sudo nsenter -t {} -n ip addr add {}.{}.{}.{}/24 dev CA-P{}A{}-C{}'.format(int(pid2), 10,(k+1+j+x),m,1,m,i, j+x))
-                   
-        # Veth pairs from agg switches to edge switches
-        # IP address for veths between agg and core switches
-        # Agg switch veth ip address: 172.16+podid.(k/2)*aggswitchid +i.2 ==> i in [1-(k/2)]
-        # Edge switch veth ip address: 172.16+podid.(k/2)*aggswitchid +i.1
-        for i in range(self.k): 
-            for j in range(int(self.k/2)): 
-                for m in range(int(self.k/2)):
-                    os.system("sudo ip link add AE-P{}A{}-P{}E{} type veth peer name AE-P{}E{}-P{}A{}".format(i,j,i,m,i,m,i,j))
-                    # set AE-P{}A{}-P{}E{} up in pod-{}-agg-{}
-                    # set AE-P{}E{}-P{}A{} up in pod-{}-edge-{}
-                    pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(i,j)]).decode("utf-8").strip()
-                    pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(i,m)]).decode("utf-8").strip()
-                    os.system('sudo ip link set AE-P{}A{}-P{}E{} netns {}'.format(i,j,i,m,int(pid1)))
-                    os.system('sudo ip link set AE-P{}E{}-P{}A{} netns {}'.format(i,m,i,j, int(pid2)))
-                    os.system('sudo nsenter -t {} -n ip link set dev AE-P{}A{}-P{}E{} up'.format(int(pid1), i,j,i,m))
-                    os.system('sudo nsenter -t {} -n ip addr add 172.{}.{}.{}/24 dev AE-P{}A{}-P{}E{}'.format(int(pid1),(16+i),((int(k/2)*j)+m),2 i,j,i,m))
-                    os.system('sudo nsenter -t {} -n ip link set dev AE-P{}E{}-P{}A{} up'.format(int(pid2), i,m,i,j))
-                    os.system('sudo nsenter -t {} -n ip addr add 172.{}.{}.{}/24 dev AE-P{}E{}-P{}A{}'.format(int(pid2),(16+i),((int(k/2)*j)+m),1 i,j,i,m))
-
-                
-        # Veth pairs from edge switches to hosts
-        # IP address for veths between edge and host switches
-        # Edge switch veth ip address: 192.168+podid.edgeswitchid.(k/2)+1
-        # host veth ip address: 192.168+podid.edgeswitchid.hostid
-        
-        for i in range(self.k):
-            for j in range(int(self.k/2)):
-                for m in range(int(self.k/2)):         
-                    os.system("sudo ip link add EH-P{}E{}-P{}H{} type veth peer name EH-P{}H{}-P{}E{}".format(i,j,i,m+(j*int(self.k/2)),i,m+(j*int(self.k/2)), i, j ))
-                    # set EH-P{}E{}-P{}H{} up in pod-{}-edge-{}
-                    # set EH-P{}H{}-P{}E{} up in pod-{}-host-{}
-                    pid1 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(i,j)]).decode("utf-8").strip()
-                    pid2 = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(i,m+(j*int(self.k/2)))]).decode("utf-8").strip()
-                    os.system('sudo ip link set EH-P{}E{}-P{}H{} netns {}'.format(i,j,i,m+(j*int(self.k/2)),int(pid1)))
-                    os.system('sudo ip link set EH-P{}H{}-P{}E{} netns {}'.format(i,m+(j*int(self.k/2)), i, j, int(pid2)))
-                    os.system('sudo nsenter -t {} -n ip link set dev EH-P{}E{}-P{}H{} up'.format(int(pid1), i,j,i,m+(j*int(self.k/2))))
-                    os.system('sudo nsenter -t {} -n ip link set dev EH-P{}H{}-P{}E{} up'.format(int(pid2), i,m+(j*int(self.k/2)), i, j))
-            
     # WARNING: It will destroy all containers.
-    def clean(self):
+    def distroyContainers(self):
+
+        print("Clean old bridges and containers...")
+
+        # bridges
+        for pod in range(0, self.k):
+            host_id = 0
+            for edge in range(0, self.num_of_half_pod_sw):
+                os.system("docker network disconnect br-p-{}-e-{} pod-{}-edge-{}".format(pod, edge, pod, edge))
+                for host in range(3, self.num_of_half_pod_sw + 3):
+                    os.system("docker network disconnect br-p-{}-e-{} pod-{}-host-{}".format(pod, edge, pod, host_id))
+                    host_id += 1
+                os.system("docker network rm br-p-{}-e-{}".format(pod, edge))
+
+
         for i in range(self.num_of_core_sw):
             try: 
                 core_sw = self.client.containers.get("core-{}".format(i))
@@ -174,3 +97,104 @@ class ContainerManager:
                     host.remove()
                 except:
                     print("didn't find pod-{}-host-{}".format(i, j))
+            
+
+    def assignLoIP(self):
+        # Assign loopback IPs
+        # Core
+        core_id = 0
+        for i in range(1, int(self.k / 2) + 1):
+            for j in range(1, int(self.k / 2) + 1):
+                os.system("docker exec core-{} ip addr add 15.{}.{}.{} dev lo".format(core_id, self.k, j, i))
+                print("core-{}".format(core_id), "lo addr:", "15.{}.{}.{}".format(self.k, j, i))
+                core_id += 1
+        
+        for i in range(self.k):
+            
+            # Pod Switch
+            # Aggregation
+            for j in range(0, int(self.k / 2)):
+                os.system("docker exec pod-{}-agg-{} ip addr add 15.{}.{}.1 dev lo".format(i, j, i, j + int(self.k / 2)))
+                print("pod-{}-agg-{}".format(i, j), "lo addr:", "15.{}.{}.1".format(i, j + int(self.k / 2)))
+            
+        print("finish assigning loopback interface ip addresses.")
+
+
+    def addLinks(self):
+        
+        # This function add veth pairs between containers and assign IP addresses to veth interfaces
+        # Interface address subnet 169.0.0.0/8
+        # Routers and hosts loopback interface address subnet 15.0.0.0/8 -- based on fattree paper
+
+        # Add links between core switches and aggregation switches
+        core_id = 0
+        for x in range(1, self.num_of_half_pod_sw + 1):
+            agg = x - 1
+            for y in range(1, self.num_of_half_pod_sw + 1):
+                pid_core = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'core-{}'.format(core_id)]).decode("utf-8").strip()
+                os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_core, pid_core))
+                print("core-{}".format(core_id), "pid =", pid_core)
+                for pod in range(0, self.k):
+                    pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
+                    os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_agg, pid_agg))
+                    print("pod-{}-agg-{}".format(pod, agg), "pid =", pid_agg)
+                    
+                    os.system("sudo ip link add ca-c-{}-p-{}-a-{} type veth peer name ca-p-{}-a-{}-c-{}".format(core_id, pod, agg, pod, agg, core_id))
+                    os.system("sudo ip link set ca-c-{}-p-{}-a-{} netns {}".format(core_id, pod, agg, int(pid_core)))
+                    os.system('sudo ip link set ca-p-{}-a-{}-c-{} netns {}'.format(pod, agg, core_id, int(pid_agg)))
+
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ca-c-{}-p-{}-a-{}'.format(int(pid_core), 169, self.k + core_id, pod, 1, core_id, pod, agg))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ca-p-{}-a-{}-c-{}'.format(int(pid_agg), 169, self.k + core_id, pod, 2, pod, agg, core_id))
+
+                    os.system('sudo ip -n {} link set dev ca-c-{}-p-{}-a-{} up'.format(int(pid_core), core_id, pod, agg))
+                    os.system('sudo ip -n {} link set dev ca-p-{}-a-{}-c-{} up'.format(int(pid_agg), pod, agg, core_id))  
+
+                core_id += 1
+        print("finish setting up links between core switches and aggregation switches.")
+
+        # Add links between aggregation switches and edge switches in each pod
+        for pod in range(0, self.k):
+            port_id = 1
+            for agg in range(0, self.num_of_half_pod_sw):
+                pid_agg = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-agg-{}'.format(pod, agg)]).decode("utf-8").strip()
+                os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_agg, pid_agg))
+                for edge in range(0, self.num_of_half_pod_sw):
+                    pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
+                    os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_edge, pid_edge))
+                    os.system("sudo ip link add ae-p-{}-a-{}-e-{} type veth peer name ae-p-{}-e-{}-a-{}".format(pod, agg, edge, pod, edge, agg))
+                    os.system('sudo ip link set ae-p-{}-a-{}-e-{} netns {}'.format(pod, agg, edge, int(pid_agg)))
+                    os.system("sudo ip link set ae-p-{}-e-{}-a-{} netns {}".format(pod, edge, agg, int(pid_edge)))
+
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, port_id, 1, pod, agg, edge))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, port_id, 2, pod, edge, agg))
+
+                    os.system('sudo ip -n {} link set dev ae-p-{}-a-{}-e-{} up'.format(int(pid_agg), pod, agg, edge))
+                    os.system('sudo ip -n {} link set dev ae-p-{}-e-{}-a-{} up'.format(int(pid_edge), pod, edge, agg))
+                    port_id += 1
+                    
+                 
+
+        print("finish setting up links between aggregation switches and edge switches.")
+
+        # Add links between edge switches and hosts in each pod
+        for pod in range(0, self.k):
+            host_id = 0
+            for edge in range(0, self.num_of_half_pod_sw):
+                pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
+                os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_edge, pid_edge))
+
+                os.system("docker network create --driver bridge --subnet 15.{}.{}.{}/24 br-p-{}-e-{}".format(pod, edge, 0, pod, edge))
+                os.system("docker network connect --ip 15.{}.{}.2 br-p-{}-e-{} pod-{}-edge-{}".format(pod, edge, pod, edge, pod, edge))
+
+                for host in range(3, self.num_of_half_pod_sw + 3):
+                    pid_host = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(pod, host_id)]).decode("utf-8").strip()
+                    os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_host, pid_host))
+                    
+                    os.system("docker network connect --ip 15.{}.{}.{} br-p-{}-e-{} pod-{}-host-{}".format(pod, edge, host, pod, edge, pod, host_id))
+                    # change default gw to edge sw
+                    os.system("docker exec pod-{}-host-{} route add default gw 15.{}.{}.2".format(pod, host_id, pod, edge))
+                    os.system("docker exec pod-{}-host-{} route del default gw 15.{}.{}.1".format(pod, host_id, pod, edge))
+                    
+                    host_id += 1
+
+        print("finish setting up links between edge switches and hosts.")
