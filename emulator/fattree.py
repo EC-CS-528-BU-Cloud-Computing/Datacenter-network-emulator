@@ -189,6 +189,9 @@ class FatTree:
                     os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_host, pid_host))
                     
                     os.system("docker network connect --ip 15.{}.{}.{} br-p-{}-e-{} pod-{}-host-{}".format(pod, edge, host, pod, edge, pod, host_id))
+                    # change default gw to edge sw
+                    os.system("docker exec pod-{}-host-{} route add default gw 15.{}.{}.2".format(pod, host_id, pod, edge))
+                    os.system("docker exec pod-{}-host-{} route del default gw 15.{}.{}.1".format(pod, host_id, pod, edge))
                     
                     host_id += 1
 

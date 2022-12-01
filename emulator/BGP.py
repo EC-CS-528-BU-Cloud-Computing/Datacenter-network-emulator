@@ -34,18 +34,16 @@ class BGP(FatTree):
             f.write("   no bgp ebgp-requires-policy\n")
             f.write("   timers bgp 3 9\n")
             f.write("   neighbor peer-group ISL\n")
-            f.write("   neighbor ISL remote-as " + str(asn_agg) + "\n")
             f.write("   neighbor ISL advertisement-interval 0\n")
             f.write("   neighbor ISL timers connect 5\n")
             for i in range(len(neighbor_list)):
+                f.write("   neighbor " + neighbor_list[i]["ip"] + " remote-as " + str(neighbor_list[i]["asn"]) + "\n")
                 f.write("   neighbor " + neighbor_list[i]["ip"] + " peer-group ISL\n")
             f.write("   address-family ipv4 unicast\n")
             f.write("       neighbor ISL activate\n")
             f.write("       network " + ip_lo + "/24\n")
             f.write("       maximum-paths 64\n")
             f.write("   exit-address-family\n")
-
-
 
     def genCoreConfig(self, x, y, core_id, asn):
         neighbor_list = []
@@ -118,7 +116,6 @@ class BGP(FatTree):
         for x in range(0, self.num_of_half_pod_sw):
             for y in range(0, self.num_of_half_pod_sw):
                 os.system("docker exec -it core-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons".format(core_id))
-                # print('docker exec -it core-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons'.format(core_id))
                 os.system("docker restart core-{}".format(core_id))
                 core_id += 1
         for pod in range(0, self.k):
