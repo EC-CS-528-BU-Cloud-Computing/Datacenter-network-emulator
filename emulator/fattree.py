@@ -27,7 +27,7 @@ class FatTree:
         self.num_of_half_pod_sw = int(self.k / 2)
 
     def createContainers(self):
-
+        print("Create containers...")
         # Create host base image
 
 
@@ -50,7 +50,7 @@ class FatTree:
         
     # WARNING: It will destroy all containers.
     def distroyContainers(self):
-        MAX_K = 2
+        MAX_K = 4
 
         print("Clean old bridges and containers...")
 

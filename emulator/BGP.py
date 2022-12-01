@@ -7,6 +7,7 @@ class BGP(FatTree):
         self.tmp_file_path = "./bgpd.conf"
 
     def startRouter(self):
+        print("Start routers...")
         core_id = 0
         for x in range(0, self.num_of_half_pod_sw):
             for y in range(0, self.num_of_half_pod_sw):
