@@ -6,7 +6,7 @@ class BGP(FatTree):
         self.frr_bgp_path = "/etc/frr/"
         self.tmp_file_path = "./bgpd.conf"
 
-    def gen_bgpd_conf(self, asn, ip_lo, neighbor_list, type):
+    def gen_core_agg_bgpd_conf(self, asn, ip_lo, neighbor_list):
         with open(self.tmp_file_path, "w") as f:
             f.write("router bgp " + str(asn) + "\n")
             f.write("   bgp router-id " + ip_lo + "\n")
@@ -22,15 +22,30 @@ class BGP(FatTree):
             f.write("   bgp bestpath as-path multipath-relax\n")
             f.write("   address-family ipv4 unicast\n")
             f.write("       neighbor ISL activate\n")
-            
-            if type == "core_sw":
-                f.write("       network " + ip_lo + "/32\n")
-            elif type == "agg_sw":
-                f.write("       network " + ip_lo + "/32\n")
-            else:
-                f.write("       network " + ip_lo + "/24\n")
+            f.write("       network " + ip_lo + "/32\n")
             f.write("       maximum-paths 64\n")
             f.write("   exit-address-family\n")
+
+    def gen_edge_bgpd_conf(self, asn, asn_agg, ip_lo, neighbor_list):
+        with open(self.tmp_file_path, "w") as f:
+            f.write("router bgp " + str(asn) + "\n")
+            f.write("   bgp router-id " + ip_lo + "\n")
+            f.write("   bgp log-neighbor-changes\n")
+            f.write("   no bgp ebgp-requires-policy\n")
+            f.write("   timers bgp 3 9\n")
+            f.write("   neighbor peer-group ISL\n")
+            f.write("   neighbor ISL remote-as " + str(asn_agg) + "\n")
+            f.write("   neighbor ISL advertisement-interval 0\n")
+            f.write("   neighbor ISL timers connect 5\n")
+            for i in range(len(neighbor_list)):
+                f.write("   neighbor " + neighbor_list[i]["ip"] + " peer-group ISL\n")
+            f.write("   address-family ipv4 unicast\n")
+            f.write("       neighbor ISL activate\n")
+            f.write("       network " + ip_lo + "/24\n")
+            f.write("       maximum-paths 64\n")
+            f.write("   exit-address-family\n")
+
+
 
     def genCoreConfig(self, x, y, core_id, asn):
         neighbor_list = []
@@ -41,7 +56,7 @@ class BGP(FatTree):
             asn_agg = 65000 + pod * 20
             tmp = {"ip": ip, "asn": asn_agg}
             neighbor_list.append(tmp)
-        self.gen_bgpd_conf(asn, ip_lo, neighbor_list, "core_sw")
+        self.gen_core_agg_bgpd_conf(asn, ip_lo, neighbor_list)
         os.system("docker cp " + self.tmp_file_path + " " + "core-{}".format(core_id) + ":" + self.frr_bgp_path)
     
     def genAggConfig(self, pod, agg, asn):
@@ -60,20 +75,20 @@ class BGP(FatTree):
             asn_core = 65534
             tmp = {"ip": ip, "asn": asn_core}
             neighbor_list.append(tmp)
-        self.gen_bgpd_conf(asn, ip_lo, neighbor_list, "agg_sw")
+        self.gen_core_agg_bgpd_conf(asn, ip_lo, neighbor_list)
         os.system("docker cp " + self.tmp_file_path + " " + "pod-{}-agg-{}".format(pod, agg) + ":" + self.frr_bgp_path)
     
     def genEdgeConfig(self, pod, edge, asn):
         neighbor_list = []
         ip_lo = "15.{}.{}.1".format(pod, edge)
         port_id = edge + 1
+        asn_agg = 65000 + pod * 20
         for agg in range(0, self.num_of_half_pod_sw):
             ip = "169.{}.{}.{}".format(pod, port_id, 1)
-            asn_agg = 65000 + pod * 20
             tmp = {"ip": ip, "asn": asn_agg}
             neighbor_list.append(tmp)
             port_id += self.num_of_half_pod_sw
-        self.gen_bgpd_conf(asn, ip_lo, neighbor_list, "edge_sw")
+        self.gen_edge_bgpd_conf(asn, asn_agg, ip_lo, neighbor_list)
         os.system("docker cp " + self.tmp_file_path + " " + "pod-{}-edge-{}".format(pod, edge) + ":" + self.frr_bgp_path)
 
     def BGPConfig(self):

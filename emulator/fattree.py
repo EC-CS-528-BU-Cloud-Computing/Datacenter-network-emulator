@@ -51,6 +51,18 @@ class FatTree:
         
     # WARNING: It will destroy all containers.
     def distroyContainers(self):
+
+        # bridges
+        for pod in range(0, self.k):
+            host_id = 0
+            for edge in range(0, self.num_of_half_pod_sw):
+                os.system("docker network disconnect br-p-{}-e-{} pod-{}-edge-{}".format(pod, edge, pod, edge))
+                for host in range(3, self.num_of_half_pod_sw + 3):
+                    os.system("docker network disconnect br-p-{}-e-{} pod-{}-host-{}".format(pod, edge, pod, host_id))
+                    host_id += 1
+                os.system("docker network rm br-p-{}-e-{}".format(pod, edge))
+
+
         for i in range(self.num_of_core_sw):
             try: 
                 core_sw = self.client.containers.get("core-{}".format(i))
@@ -85,11 +97,6 @@ class FatTree:
                 except:
                     print("didn't find pod-{}-host-{}".format(i, j))
             
-            # bridges
-            for pod in range(0, self.k):
-                for edge in range(0, self.num_of_half_pod_sw):
-                    os.system("sudo ip link set br-p-{}-e-{} down".format(pod, edge))
-                    os.system("sudo brctl delbr br-p-{}-e-{}".format(pod, edge))
 
     def assignLoIP(self):
         # Assign loopback IPs
@@ -175,30 +182,14 @@ class FatTree:
                 pid_edge = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-edge-{}'.format(pod, edge)]).decode("utf-8").strip()
                 os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_edge, pid_edge))
 
-                os.system("sudo brctl addbr br-p-{}-e-{}".format(pod, edge))
-                os.system("sudo ip link set dev br-p-{}-e-{} up".format(pod, edge))
-                os.system('sudo ip addr add {}.{}.{}.{}/24 dev br-p-{}-e-{}'.format(15, pod, edge, 1, pod, edge))
-                os.system("sudo ip link add vbr-p-{}-e-{} type veth peer name ve-p-{}-e-{}".format(pod, edge, pod, edge))
-                os.system("sudo ip link set vbr-p-{}-e-{} master br-p-{}-e-{}".format(pod, edge, pod, edge))
-                os.system("sudo ip link set dev vbr-p-{}-e-{} up".format(pod, edge))
-                os.system("sudo ip link set ve-p-{}-e-{} netns {}".format(pod, edge, int(pid_edge)))
-                os.system("sudo ip -n {} link set dev ve-p-{}-e-{} up".format(int(pid_edge), pod, edge))
-                os.system("sudo ip -n {} addr add {}.{}.{}.{}/32 dev ve-p-{}-e-{}".format(int(pid_edge), 169, pod, edge, 3, pod, edge))
+                os.system("docker network create --driver bridge --subnet 15.{}.{}.{}/24 br-p-{}-e-{}".format(pod, edge, 0, pod, edge))
+                os.system("docker network connect --ip 15.{}.{}.2 br-p-{}-e-{} pod-{}-edge-{}".format(pod, edge, pod, edge, pod, edge))
 
-                for host in range(2, self.num_of_half_pod_sw + 2):
+                for host in range(3, self.num_of_half_pod_sw + 3):
                     pid_host = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(pod, host_id)]).decode("utf-8").strip()
                     os.system("sudo ln -sfT /proc/{}/ns/net /var/run/netns/{}".format(pid_host, pid_host))
-
-                    os.system("sudo ip link add eh-p-{}-e-{}-h-{} type veth peer name eh-p-{}-h-{}-e-{}".format(pod, edge, host_id, pod, host_id, edge))
-                    print("sudo ip link add eh-p-{}-e-{}-h-{} type veth peer name eh-p-{}-h-{}-e-{}".format(pod, edge, host_id, pod, host_id, edge))
                     
-                    os.system('sudo ip link set eh-p-{}-e-{}-h-{} master br-p-{}-e-{}'.format(pod, edge, host_id, pod, edge))
-                    os.system('sudo ip link set eh-p-{}-h-{}-e-{} netns {}'.format(pod, host_id, edge, int(pid_host)))
-                    
-                    os.system("sudo ip -n {} addr add {}.{}.{}.{}/24 dev eh-p-{}-h-{}-e-{}".format(int(pid_host), 15, pod, edge, host, pod, host_id, edge))
-
-                    os.system('sudo ip link set dev eh-p-{}-e-{}-h-{} up'.format(pod, edge, host_id))
-                    os.system('sudo ip -n {} link set dev eh-p-{}-h-{}-e-{} up'.format(int(pid_host), pod, host_id, edge))
+                    os.system("docker network connect --ip 15.{}.{}.{} br-p-{}-e-{} pod-{}-host-{}".format(pod, edge, host, pod, edge, pod, host_id))
                     
                     host_id += 1
 
