@@ -6,7 +6,7 @@ class BGP(FatTree):
         self.frr_bgp_path = "/etc/frr/"
         self.tmp_file_path = "./bgpd.conf"
 
-    def gen_bgpd_conf(self, asn, ip_lo, neighbor_list):
+    def gen_bgpd_conf(self, asn, ip_lo, neighbor_list, type):
         with open(self.tmp_file_path, "w") as f:
             f.write("router bgp " + str(asn) + "\n")
             f.write("   bgp router-id " + ip_lo + "\n")
@@ -23,9 +23,9 @@ class BGP(FatTree):
             f.write("   address-family ipv4 unicast\n")
             f.write("       neighbor ISL activate\n")
             
-            if asn == 65534:
+            if type == "core_sw":
                 f.write("       network " + ip_lo + "/32\n")
-            elif (asn - 65000) % 20 == 0:
+            elif type == "agg_sw":
                 f.write("       network " + ip_lo + "/32\n")
             else:
                 f.write("       network " + ip_lo + "/24\n")
@@ -37,38 +37,43 @@ class BGP(FatTree):
         agg = x + self.num_of_half_pod_sw - 1
         ip_lo = "15.{}.{}.{}".format(self.k, x, y)
         for pod in range(0, self.k):
-            ip = "169.{}.{}.{}".format(self.k + pod, agg, core_id)
+            ip = "169.{}.{}.{}".format(self.k + core_id, pod, 2)
             asn_agg = 65000 + pod * 20
             tmp = {"ip": ip, "asn": asn_agg}
             neighbor_list.append(tmp)
-        self.gen_bgpd_conf(asn, ip_lo, neighbor_list)
+        self.gen_bgpd_conf(asn, ip_lo, neighbor_list, "core_sw")
         os.system("docker cp " + self.tmp_file_path + " " + "core-{}".format(core_id) + ":" + self.frr_bgp_path)
     
     def genAggConfig(self, pod, agg, asn):
         neighbor_list = []
         ip_lo = "15.{}.{}.1".format(pod, self.num_of_half_pod_sw + agg)
+        port_id = self.num_of_half_pod_sw * agg + 1
         for edge in range(0, self.num_of_half_pod_sw):
-            ip = "169.{}.{}.{}".format(pod, edge, self.num_of_half_pod_sw + agg)
+            ip = "169.{}.{}.{}".format(pod, port_id, 2)
             asn_edge = 65000 + pod * 20 + edge + 1
             tmp = {"ip": ip, "asn": asn_edge}
             neighbor_list.append(tmp)
+            port_id += 1
+
         for core_id in range(0, self.num_of_core_sw):
-            ip = "169.{}.{}.{}".format(self.k + pod, agg, core_id)
+            ip = "169.{}.{}.{}".format(self.k + core_id, pod, 1)
             asn_core = 65534
             tmp = {"ip": ip, "asn": asn_core}
             neighbor_list.append(tmp)
-        self.gen_bgpd_conf(asn, ip_lo, neighbor_list)
+        self.gen_bgpd_conf(asn, ip_lo, neighbor_list, "agg_sw")
         os.system("docker cp " + self.tmp_file_path + " " + "pod-{}-agg-{}".format(pod, agg) + ":" + self.frr_bgp_path)
     
     def genEdgeConfig(self, pod, edge, asn):
         neighbor_list = []
         ip_lo = "15.{}.{}.1".format(pod, edge)
+        port_id = edge + 1
         for agg in range(0, self.num_of_half_pod_sw):
-            ip = "169.{}.{}.{}".format(pod, edge, agg+self.num_of_half_pod_sw)
+            ip = "169.{}.{}.{}".format(pod, port_id, 1)
             asn_agg = 65000 + pod * 20
             tmp = {"ip": ip, "asn": asn_agg}
             neighbor_list.append(tmp)
-        self.gen_bgpd_conf(asn, ip_lo, neighbor_list)
+            port_id += self.num_of_half_pod_sw
+        self.gen_bgpd_conf(asn, ip_lo, neighbor_list, "edge_sw")
         os.system("docker cp " + self.tmp_file_path + " " + "pod-{}-edge-{}".format(pod, edge) + ":" + self.frr_bgp_path)
 
     def BGPConfig(self):
