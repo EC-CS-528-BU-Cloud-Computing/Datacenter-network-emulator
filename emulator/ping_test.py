@@ -23,7 +23,7 @@ if __name__ == "__main__":
         for dest_ip in host_ips:
             if dest_ip != src_ip:
                 try:
-                    sp.check_output(['docker', 'exec', '-it', container, "ping", "-W", "1", "-I", "eth1", dest_ip]).decode("utf-8").strip()
+                    sp.check_output(['docker', 'exec', '-it', container, "ping", "-c", "1", "-I", "eth1", dest_ip]).decode("utf-8").strip()
                     print("Test successfully: Source : {} Destination: {}".format(src_ip, dest_ip))
                 except sp.CalledProcessError as e:
                     print("Test failed: Source : {} Destination: {}".format(src_ip, dest_ip))
