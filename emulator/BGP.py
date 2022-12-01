@@ -80,7 +80,7 @@ class BGP(FatTree):
     
     def genEdgeConfig(self, pod, edge, asn):
         neighbor_list = []
-        ip_lo = "15.{}.{}.1".format(pod, edge)
+        ip_lo = "15.{}.{}.2".format(pod, edge)
         port_id = edge + 1
         asn_agg = 65000 + pod * 20
         for agg in range(0, self.num_of_half_pod_sw):

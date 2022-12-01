@@ -27,27 +27,26 @@ class FatTree:
         self.num_of_half_pod_sw = int(self.k / 2)
 
     def createContainers(self):
+
+        # Create host base image
+
+
         # Start containers
         # Core
         for i in range(self.num_of_core_sw):
-            self.client.containers.run("frrouting/frr" ,detach=True, init=True, name="core-{}".format(i), privileged=True)
+            self.client.containers.run("frrouting/frr:latest" ,detach=True, init=True, name="core-{}".format(i), privileged=True)
        
         for i in range(self.k):
             # Pod Switch
             for j in range(int(self.num_of_sw_per_pod / 2)):
                 # Aggregation
-                self.client.containers.run("frrouting/frr" ,detach=True, init=True, name="pod-{}-agg-{}".format(i, j), privileged=True)
+                self.client.containers.run("frrouting/frr:latest" ,detach=True, init=True, name="pod-{}-agg-{}".format(i, j), privileged=True)
                 # Edge
-                self.client.containers.run("frrouting/frr" ,detach=True, init=True, name="pod-{}-edge-{}".format(i, j), privileged=True)
+                self.client.containers.run("frrouting/frr:latest" ,detach=True, init=True, name="pod-{}-edge-{}".format(i, j), privileged=True)
             # Host
             for j in range(self.num_of_host_per_pod):
-                self.client.containers.run("ubuntu", detach=True, init=True, tty=True, name="pod-{}-host-{}".format(i, j), privileged=True)
-                # os.system("docker exec -it pod-{}-host-{} echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections".format(i, host_id))
-                os.system("docker exec -it pod-{}-host-{} apt update".format(i, j))
-                os.system("docker exec -it pod-{}-host-{} apt install dialog apt-utils -y".format(i, j))
-                os.system("docker exec -it pod-{}-host-{} apt install -y -q net-tools".format(i, j))
-                os.system("docker exec -it pod-{}-host-{} apt install -y -q iproute2".format(i, j))
-                os.system("docker exec -it pod-{}-host-{} apt install -y -q inetutils-ping".format(i, j))
+                self.client.containers.run("ubuntu_net:Dockerfile", detach=True, init=True, tty=True, name="pod-{}-host-{}".format(i, j), privileged=True)
+               
         
     # WARNING: It will destroy all containers.
     def distroyContainers(self):
