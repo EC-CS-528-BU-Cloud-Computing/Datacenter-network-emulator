@@ -6,6 +6,22 @@ class BGP(FatTree):
         self.frr_bgp_path = "/etc/frr/"
         self.tmp_file_path = "./bgpd.conf"
 
+    def startRouter(self):
+        core_id = 0
+        for x in range(0, self.num_of_half_pod_sw):
+            for y in range(0, self.num_of_half_pod_sw):
+                os.system("docker exec -it core-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons".format(core_id))
+                os.system("docker restart core-{}".format(core_id))
+                core_id += 1
+        for pod in range(0, self.k):
+            for agg in range(0, self.num_of_half_pod_sw):
+                os.system("docker exec -it pod-{}-agg-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons".format(pod, agg))
+                os.system("docker restart pod-{}-agg-{}".format(pod, agg))
+            for edge in range(0, self.num_of_half_pod_sw):
+                os.system("docker exec -it pod-{}-edge-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons".format(pod, edge))
+                os.system("docker restart pod-{}-edge-{}".format(pod, edge))
+
+
     def gen_core_agg_bgpd_conf(self, asn, ip_lo, neighbor_list):
         with open(self.tmp_file_path, "w") as f:
             f.write("router bgp " + str(asn) + "\n")
@@ -110,18 +126,59 @@ class BGP(FatTree):
             for edge in range(0, self.num_of_half_pod_sw):
                 asn_edge = asn_agg + edge + 1
                 self.genEdgeConfig(pod, edge, asn_edge)
-        
-    def startRouter(self):
+
+    def gen_unnumbered_bgpd_conf(self, asn, ip_lo, port_list):
+         with open(self.tmp_file_path, "w") as f:
+            f.write("ip prefix-list DC_LOCAL_SUBNET 5 permit 15.0.0.0/8 le 24\n")
+            f.write("ip prefix-list DC_LOCAL_SUBNET 10 permit 15.0.0.0/8 le 32\n")
+            f.write("route-map ACCEPT_DC_LOCAL permit 10\n")
+            f.write("   match ip-address DC_LOCAL_SUBNET")
+            f.write("\n")
+            f.write("router bgp " + str(asn) + "\n")
+            f.write("   bgp router-id " + ip_lo + "\n")
+            f.write("   bgp log-neighbor-changes\n")
+            f.write("   no bgp ebgp-requires-policy\n")
+            f.write("   timers bgp 3 9\n")
+            f.write("   neighbor peer-group ISL\n")
+            f.write("   neighbor ISL remote-as external\n")
+            f.write("   neighbor ISL advertisement-interval 0\n")
+            f.write("   neighbor ISL timers connect 5\n")
+            for i in range(len(port_list)):
+                f.write("   neighbor " + "swp" + str(port_list[i]) + " interface peer-group ISL\n")
+            f.write("   address-family ipv4 unicast\n")
+            f.write("       neighbor ISL activate\n")
+            f.write("       redistribute connected route-map ACCEPT_DC_LOCAL\n")
+            f.write("       maximum-paths 64\n")
+            f.write("   exit-address-family\n")
+
+    def genUnnumberedCoreConfig(self):
+        pass
+    
+    def genUnnumberedAggConfig(self):
+        pass
+
+    def genUnnumberedEdgeConfig(self):
+        pass
+
+    def unnumberedBGP(self):
+        # Core Switches
+        # Core switches have the same ASN 65534
         core_id = 0
-        for x in range(0, self.num_of_half_pod_sw):
-            for y in range(0, self.num_of_half_pod_sw):
-                os.system("docker exec -it core-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons".format(core_id))
-                os.system("docker restart core-{}".format(core_id))
+        for x in range(1, self.num_of_half_pod_sw + 1):
+            for y in range(1, self.num_of_half_pod_sw + 1):
+                asn_core = 65534
+                self.genUnnumberedCoreConfig(x, y, core_id, asn_core)
                 core_id += 1
+
         for pod in range(0, self.k):
+            # Aggregation Switches
+            asn_agg = 65000 + pod * 20
             for agg in range(0, self.num_of_half_pod_sw):
-                os.system("docker exec -it pod-{}-agg-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons".format(pod, agg))
-                os.system("docker restart pod-{}-agg-{}".format(pod, agg))
+                self.genUnnumberedAggConfig(pod, agg, asn_agg)
+            
+            # Edge Switches
             for edge in range(0, self.num_of_half_pod_sw):
-                os.system("docker exec -it pod-{}-edge-{} sed -i \'/bgpd=no/c\\bgpd=yes\' /etc/frr/daemons".format(pod, edge))
-                os.system("docker restart pod-{}-edge-{}".format(pod, edge))
+                asn_edge = asn_agg + edge + 1
+                self.genUnnumberedEdgeConfig(pod, edge, asn_edge)
+
+    
