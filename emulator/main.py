@@ -1,5 +1,6 @@
 from BGP import *
 import sys
+import time
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -29,6 +30,12 @@ if __name__ == "__main__":
     else:
         mgr.addLinksUnnumbered()
 
-    # mgr.distroyContainers()
+    time.sleep(10)
+
+    mgr.breakCoreAggLink()
+    # mgr.breakAggEdgeLink()
+    # mgr.recoverCoreAggLink()
+    # mgr.recoverAggEdgeLink()
+
     print("Hello FatTree (k = {})!".format(k))
     

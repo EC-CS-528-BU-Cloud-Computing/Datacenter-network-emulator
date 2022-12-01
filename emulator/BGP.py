@@ -64,8 +64,8 @@ class BGP(FatTree):
     # redistribute route and route map 
     def gen_redistribute_route_bgpd_conf(self, asn, ip_lo, neighbor_list):
         with open(self.tmp_file_path, "w") as f:
-            f.write("ip prefix-list DC_LOCAL_SUBNET 5 permit 15.0.0.0/8 le 32\n")
-            f.write("route-map ACCEPT_DC_LOCAL permit 5\n")
+            f.write("ip prefix-list DC_LOCAL_SUBNET seq 5 permit 15.0.0.0/8 le 32\n")
+            f.write("route-map ACCEPT_DC_LOCAL permit seq 5\n")
             f.write("   match ip-address DC_LOCAL_SUBNET\n")
             f.write("\n")
             f.write("router bgp " + str(asn) + "\n")

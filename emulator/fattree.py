@@ -271,3 +271,31 @@ class FatTree:
                     host_id += 1
 
         print("finish setting up links between edge switches and hosts.")
+
+    def breakCoreAggLink(self):
+        core_id = 0
+        pod = 0
+        agg = 0
+        print("Break a link between core-{} sw and pod-{}-agg-{} sw".format(core_id, pod, agg))
+        os.system("docker exec core-{} ifconfig ca-c-{}-p-{}-a-{} down".format(core_id, core_id, pod, agg))
+    
+    def breakAggEdgeLink(self):
+        pod = 0
+        agg = 0
+        edge = 0
+        print("Break a link between pod-{}-agg-{} sw and pod-{}-edge-{} sw".format(pod, agg, pod, edge))
+        os.system("docker exec pod-{}-agg-{} ifconfig ae-p-{}-a-{}-e{} down".format(pod, agg, pod, agg, edge))
+    
+    def recoverCoreAggLink(self):
+        core_id = 0
+        pod = 0
+        agg = 0
+        print("Recover a link between core-{} sw and pod-{}-agg-{} sw".format(core_id, pod, agg))
+        os.system("docker exec core-{} ifconfig ca-c-{}-p-{}-a-{} up".format(core_id, core_id, pod, agg))
+    
+    def recoverAggEdgeLink(self):
+        pod = 0
+        agg = 0
+        edge = 0
+        print("Recover a link between pod-{}-agg-{} sw and pod-{}-edge-{} sw".format(pod, agg, pod, edge))
+        os.system("docker exec pod-{}-agg-{} ifconfig ae-p-{}-a-{}-e{} up".format(pod, agg, pod, agg, edge))
