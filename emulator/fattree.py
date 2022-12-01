@@ -50,11 +50,12 @@ class FatTree:
         
     # WARNING: It will destroy all containers.
     def distroyContainers(self):
+        MAX_K = 2
 
         print("Clean old bridges and containers...")
 
         # bridges
-        for pod in range(0, self.k):
+        for pod in range(0, MAX_K):
             host_id = 0
             for edge in range(0, self.num_of_half_pod_sw):
                 os.system("docker network disconnect br-p-{}-e-{} pod-{}-edge-{}".format(pod, edge, pod, edge))
@@ -72,7 +73,7 @@ class FatTree:
             except: 
                 print("didn't find core-{}".format(i))
         
-        for i in range(self.k):
+        for i in range(MAX_K):
             # Pod Switch
             for j in range(int(self.num_of_sw_per_pod / 2)):
                 # Aggregation
@@ -221,9 +222,6 @@ class FatTree:
                     os.system("sudo ip link set ca-c-{}-p-{}-a-{} netns {}".format(core_id, pod, agg, int(pid_core)))
                     os.system('sudo ip link set ca-p-{}-a-{}-c-{} netns {}'.format(pod, agg, core_id, int(pid_agg)))
 
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ca-c-{}-p-{}-a-{}'.format(int(pid_core), 169, self.k + core_id, pod, 1, core_id, pod, agg))
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ca-p-{}-a-{}-c-{}'.format(int(pid_agg), 169, self.k + core_id, pod, 2, pod, agg, core_id))
-
                     os.system('sudo ip -n {} link set dev ca-c-{}-p-{}-a-{} up'.format(int(pid_core), core_id, pod, agg))
                     os.system('sudo ip -n {} link set dev ca-p-{}-a-{}-c-{} up'.format(int(pid_agg), pod, agg, core_id))  
 
@@ -242,9 +240,6 @@ class FatTree:
                     os.system("sudo ip link add ae-p-{}-a-{}-e-{} type veth peer name ae-p-{}-e-{}-a-{}".format(pod, agg, edge, pod, edge, agg))
                     os.system('sudo ip link set ae-p-{}-a-{}-e-{} netns {}'.format(pod, agg, edge, int(pid_agg)))
                     os.system("sudo ip link set ae-p-{}-e-{}-a-{} netns {}".format(pod, edge, agg, int(pid_edge)))
-
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, port_id, 1, pod, agg, edge))
-                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, port_id, 2, pod, edge, agg))
 
                     os.system('sudo ip -n {} link set dev ae-p-{}-a-{}-e-{} up'.format(int(pid_agg), pod, agg, edge))
                     os.system('sudo ip -n {} link set dev ae-p-{}-e-{}-a-{} up'.format(int(pid_edge), pod, edge, agg))

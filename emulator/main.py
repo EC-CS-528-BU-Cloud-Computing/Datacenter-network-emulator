@@ -3,18 +3,22 @@ import sys
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 main.py fattree_k [unnumbered]")
-    unnumbered = False   
+        print("Usage: python3 main.py fattree_k [redistribute] [unnumbered]")
+    unnumbered = False  
+    redistribute = False 
     k = int(sys.argv[1])
-    if len(sys.argv) == 3 and sys.argv[2] == "unnumbered":
-        unnumbered = True
+    for op in sys.argv:
+        if op == "redistribute":
+            redistribute = True
+        if op == "unnumbered":
+            unnumbered = True
 
     mgr = BGP(k)
     mgr.distroyContainers()
     mgr.createContainers()
 
     if not unnumbered:
-        mgr.BGPConfig()
+        mgr.BGPConfig(redistribute)
     else:
         mgr.unnumberedBGP()
     mgr.startRouter()
