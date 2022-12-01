@@ -183,6 +183,7 @@ class FatTree:
                 os.system("sudo ip link set dev vbr-p-{}-e-{} up".format(pod, edge))
                 os.system("sudo ip link set ve-p-{}-e-{} netns {}".format(pod, edge, int(pid_edge)))
                 os.system("sudo ip -n {} link set dev ve-p-{}-e-{} up".format(int(pid_edge), pod, edge))
+                os.system("sudo ip -n {} addr add {}.{}.{}.{}/32 dev ve-p-{}-e-{}".format(int(pid_edge), 169, pod, edge, 3, pod, edge))
 
                 for host in range(2, self.num_of_half_pod_sw + 2):
                     pid_host = sp.check_output(['docker', 'inspect', '-f', '{{.State.Pid}}', 'pod-{}-host-{}'.format(pod, host_id)]).decode("utf-8").strip()
