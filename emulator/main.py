@@ -1,7 +1,11 @@
 from BGP import *
+import sys
 
 if __name__ == "__main__":
-    mgr = BGP(2)
+    if len(sys.argv) < 2:
+        print("Usage: python3 main.py fattree_k")
+    k = int(sys.argv[1])
+    mgr = BGP(k)
     mgr.distroyContainers()
     mgr.createContainers()
 
@@ -12,5 +16,5 @@ if __name__ == "__main__":
     mgr.addLinks()
 
     # mgr.distroyContainers()
-    print("Hello FatTree!")
+    print("Hello FatTree (k = {})!".format(k))
     

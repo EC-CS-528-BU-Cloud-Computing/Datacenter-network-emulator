@@ -18,7 +18,7 @@ Host runs ubuntu image.
 '''
 class FatTree:
     def __init__(self, k) -> None:
-        assert (k >= 2 and k % 2 == 0)
+        assert (k >= 2 and k <= 18 and k % 2 == 0)
         self.k = k
         self.client =  docker.from_env()
         self.num_of_core_sw = int((self.k * self.k) / 4)
@@ -50,6 +50,8 @@ class FatTree:
         
     # WARNING: It will destroy all containers.
     def distroyContainers(self):
+
+        print("Clean old bridges and containers...")
 
         # bridges
         for pod in range(0, self.k):
