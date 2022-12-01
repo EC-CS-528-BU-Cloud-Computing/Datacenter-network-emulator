@@ -241,6 +241,12 @@ class FatTree:
                     os.system('sudo ip link set ae-p-{}-a-{}-e-{} netns {}'.format(pod, agg, edge, int(pid_agg)))
                     os.system("sudo ip link set ae-p-{}-e-{}-a-{} netns {}".format(pod, edge, agg, int(pid_edge)))
 
+<<<<<<< HEAD
+=======
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-a-{}-e-{}'.format(int(pid_agg), 169, pod, port_id, 1, pod, agg, edge))
+                    os.system('sudo ip -n {} addr add {}.{}.{}.{}/24 dev ae-p-{}-e-{}-a-{}'.format(int(pid_edge), 169, pod, port_id, 2, pod, edge, agg))
+
+>>>>>>> 337529f (init)
                     os.system('sudo ip -n {} link set dev ae-p-{}-a-{}-e-{} up'.format(int(pid_agg), pod, agg, edge))
                     os.system('sudo ip -n {} link set dev ae-p-{}-e-{}-a-{} up'.format(int(pid_edge), pod, edge, agg))
                     port_id += 1
