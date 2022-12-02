@@ -22,7 +22,6 @@ if __name__ == "__main__":
     for (client_container, src_ip) in zip(host_names, host_ips):
         for (dest_container, dest_ip) in zip(host_names, host_ips):
             if dest_ip != src_ip:
-                out = "WTF"
                 try:
                     # Destination starts a TCP using netcat
                     print("Start TCP server at {}".format(dest_ip))
