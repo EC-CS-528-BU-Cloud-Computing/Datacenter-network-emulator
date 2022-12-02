@@ -33,6 +33,12 @@ if __name__ == "__main__":
                    
                     print("TCP Test success: Source : {} Destination: {}".format(src_ip, dest_ip))
                 except sp.CalledProcessError as e:
-                    
                     print("TCP Test failed: Source : {} Destination: {}".format(src_ip, dest_ip))
-                   
+                finally:
+                    # In case the connection is not cleaned.
+                    try:
+                       pids = sp.check_output(['docker', 'exec', "-it", client_container,  "nc", "-z", "-v", dest_ip, "9999"]).decode('utf-8').strip()
+                       for pid in pids:
+                           sp.check_output(['docker', 'exec', "kill", "-9", pid])
+                    except sp.CalledProcessError as e:
+                        print("Connection has been cleaned.")
