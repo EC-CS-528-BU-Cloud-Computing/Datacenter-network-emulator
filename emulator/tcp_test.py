@@ -22,6 +22,7 @@ if __name__ == "__main__":
     for (client_container, src_ip) in zip(host_names, host_ips):
         for (dest_container, dest_ip) in zip(host_names, host_ips):
             if dest_ip != src_ip:
+                out = "WTF"
                 try:
                     # Destination starts a TCP using netcat
                     print("Start TCP server at {}".format(dest_ip))
@@ -36,8 +37,12 @@ if __name__ == "__main__":
                 finally:
                     # In case the connection is not cleaned.
                     try:
-                       pids = sp.check_output(['docker', 'exec', "-it", client_container,  "nc", "-z", "-v", dest_ip, "9999"]).decode('utf-8').strip()
+                       pids = sp.check_output(['docker', 'exec', "-it", dest_container, "pidof", "nc"]).decode('utf-8').strip().split(' ')
+                       print(pids)
                        for pid in pids:
-                           sp.check_output(['docker', 'exec', "kill", "-9", pid])
+                           try:
+                               sp.check_output(['docker', 'exec', dest_container, "kill", "-9", pid])
+                           except sp.CalledProcessError as e:
+                               print("Failed to kill")
                     except sp.CalledProcessError as e:
                         print("Connection has been cleaned.")
