@@ -45,8 +45,8 @@ Implementation of a FatTree topology including the use of BGP to route data with
 
 Sprint 1:
 * Understand project goals.
-* Read the paper on fat tree topology to develop an understanding of a data center networks
-* Read the book [2] to develop an understanding of BGP deployment in data centers.
+* Read the paper on [Clos topology](https://cseweb.ucsd.edu//~vahdat/papers/sigcomm08.pdf) to develop an understanding of a data center networks
+* Read the book BGP/ECMP](https://docs.jetstream-cloud.org/attachments/bgp-in-the-data-center.pdf) to develop an understanding of BGP deployment in data centers.
 * Prepare a presentation for the mentor.
 
 Sprint 2: 
