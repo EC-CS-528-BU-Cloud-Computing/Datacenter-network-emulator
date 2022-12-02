@@ -13,7 +13,7 @@ if __name__ == "__main__":
             redistribute = True
         if op == "unnumbered":
             unnumbered = True
-            
+
     mgr = BGP(k)
     mgr.distroyContainers()
     
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         mgr.addLinks()
     else:
         mgr.addLinksUnnumbered()
-    
+
     print("Hello FatTree (k = {})!".format(k))
 
     # mgr.breakCoreAggLink()
