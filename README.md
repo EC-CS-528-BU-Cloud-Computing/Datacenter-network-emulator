@@ -59,13 +59,13 @@ Sprint 1:
 * Prepare a presentation for the mentor.
 
 Sprint 2: 
-Understand network namespaces and implement network connectivity and BGP configuration on simple examples three node topologies.
+* Understand network namespaces and implement network connectivity and BGP configuration on simple examples three node topologies.
 Sprint 3: 
-Create a tool to set up topology and add connectivity between nodes.
+* Create a tool to set up topology and add connectivity between nodes.
 Sprint 4: 
-Create a tool to configure BGP automatically in core, aggregation, and edge switches and servers.
+* Create a tool to configure BGP automatically in core, aggregation, and edge switches and servers.
 Sprint 5: 
-Create a testing tool to test the connectivity between servers and connect all the tools together.
+* Create a testing tool to test the connectivity between servers and connect all the tools together.
 
 
 ** **
