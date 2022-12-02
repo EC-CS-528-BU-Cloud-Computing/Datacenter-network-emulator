@@ -26,5 +26,5 @@ docker images
 
 ### Run emulator
 ```
-python3 main.py k (2 <= k <= 18)
+python3 main.py k (2 <= k <= 18) [unnumbered]
 ```
