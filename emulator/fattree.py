@@ -284,7 +284,7 @@ class FatTree:
         agg = 0
         edge = 0
         print("Break a link between pod-{}-agg-{} sw and pod-{}-edge-{} sw".format(pod, agg, pod, edge))
-        os.system("docker exec pod-{}-agg-{} ifconfig ae-p-{}-a-{}-e{} down".format(pod, agg, pod, agg, edge))
+        os.system("docker exec pod-{}-agg-{} ifconfig ae-p-{}-a-{}-e-{} down".format(pod, agg, pod, agg, edge))
     
     def recoverCoreAggLink(self):
         core_id = 0
@@ -298,4 +298,4 @@ class FatTree:
         agg = 0
         edge = 0
         print("Recover a link between pod-{}-agg-{} sw and pod-{}-edge-{} sw".format(pod, agg, pod, edge))
-        os.system("docker exec pod-{}-agg-{} ifconfig ae-p-{}-a-{}-e{} up".format(pod, agg, pod, agg, edge))
+        os.system("docker exec pod-{}-agg-{} ifconfig ae-p-{}-a-{}-e-{} up".format(pod, agg, pod, agg, edge))
