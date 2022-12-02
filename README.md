@@ -31,11 +31,6 @@ A visual representation of the topology will be generated to easily assess the t
 
 ![My Image](architecture.jpg)
 
- 
-
-Design Implications and Discussion:
-
-This section discusses the implications and reasons of the design decisions made during the global architecture design.
 
 ## 5. Acceptance criteria
 Acceptance criteria of this project will be as following:
