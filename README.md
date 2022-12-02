@@ -39,8 +39,6 @@ Acceptance criteria of this project will be as following:
 3. BGP configuration is automated.
 3. Each server can ping any other server in the topology using ICMP, TCP, and UDP.
 
-Implementation of a FatTree topology including the use of BGP to route data within the topology.
-
 ## 6.  Release Planning:
 
 Sprint 1:
