@@ -30,10 +30,10 @@ if __name__ == "__main__":
     else:
         mgr.addLinksUnnumbered()
 
-    mgr.breakCoreAggLink()
-    # mgr.breakAggEdgeLink()
+    # mgr.breakCoreAggLink()
+    mgr.breakAggEdgeLink()
     # mgr.recoverCoreAggLink()
-    # mgr.recoverAggEdgeLink()
+    mgr.recoverAggEdgeLink()
 
     print("Hello FatTree (k = {})!".format(k))
     
