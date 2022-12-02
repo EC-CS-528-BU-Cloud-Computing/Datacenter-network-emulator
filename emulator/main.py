@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
     mgr = BGP(k)
     mgr.distroyContainers()
+    
     mgr.createContainers()
 
     if not unnumbered:
@@ -30,10 +31,12 @@ if __name__ == "__main__":
     else:
         mgr.addLinksUnnumbered()
 
-    # mgr.breakCoreAggLink()
-    mgr.breakAggEdgeLink()
-    # mgr.recoverCoreAggLink()
-    mgr.recoverAggEdgeLink()
-
     print("Hello FatTree (k = {})!".format(k))
+
+    # mgr.breakCoreAggLink()
+    # mgr.breakAggEdgeLink()
+    # mgr.recoverCoreAggLink()
+    # mgr.recoverAggEdgeLink()
+
+    
     
