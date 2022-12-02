@@ -43,9 +43,9 @@ This section discusses the implications and reasons of the design decisions made
 
 ## 5. Acceptance criteria
 Acceptance criteria of this project will be as following:
-1. A 2 tier fat tree topology is created which wich can scale up to 16 pods.
+1. A 2 tier fat tree topology is created which can scale up to 16 pods.
 2. Routing between servers and routers is configured using BGP protocol.
-3. BGP configuration is automated
+3. BGP configuration is automated.
 3. Each server can ping any other server in the topology using ICMP, TCP, and UDP.
 
 Implementation of a FatTree topology including the use of BGP to route data within the topology.
@@ -57,11 +57,14 @@ Sprint 1:
 * Read the paper on fat tree topology to develop an understanding of a data center networks
 * Read the book [2] to develop an understanding of BGP deployment in data centers.
 * Prepare a presentation for the mentor.
-
-Sprint 2: Understand network namespaces and implement network connectivity and BGP configuration on simple examples three node topologies.
-Sprint 3: Create a tool to set up topology and add connectivity between nodes.
-Sprint 4: Create a tool to configure BGP automatically in core, aggregation, and edge switches and servers.
-Sprint 5: Create a testing tool to test the connectivity between servers and connect all the tools together.
+Sprint 2: 
+Understand network namespaces and implement network connectivity and BGP configuration on simple examples three node topologies.
+Sprint 3: 
+Create a tool to set up topology and add connectivity between nodes.
+Sprint 4: 
+Create a tool to configure BGP automatically in core, aggregation, and edge switches and servers.
+Sprint 5: 
+Create a testing tool to test the connectivity between servers and connect all the tools together.
 
 
 ** **
