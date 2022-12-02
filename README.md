@@ -57,6 +57,7 @@ Sprint 1:
 * Read the paper on fat tree topology to develop an understanding of a data center networks
 * Read the book [2] to develop an understanding of BGP deployment in data centers.
 * Prepare a presentation for the mentor.
+
 Sprint 2: 
 Understand network namespaces and implement network connectivity and BGP configuration on simple examples three node topologies.
 Sprint 3: 
