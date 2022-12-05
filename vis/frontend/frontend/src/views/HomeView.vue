@@ -34,7 +34,13 @@ export default {
         sortBy: "weight"
       },
       modes: {
-        default: ['drag-node'], // 允许拖拽画布、放缩画布、拖拽节点
+        default: ['drag-node', {
+        type: 'tooltip',
+        formatText(model) {
+          return model.bgp;
+        },
+        offset: 10,
+      },], // 允许拖拽画布、放缩画布、拖拽节点
       },
     });
     graph.data(this.graph); // 读取 Step 2 中的数据源到图上

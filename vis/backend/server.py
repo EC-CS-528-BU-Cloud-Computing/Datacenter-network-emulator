@@ -28,13 +28,23 @@ for c in client.containers.list():
         weight = 150
     if "edge" in c.name:
         weight = 80
-    kv["nodes"].append({
+    node = {
         "id": c.name,
         "label": c.name,
+        "bgp": "",
         "size": 80,
         "type": node_type,
         "weight": weight
-        })
+    }
+    if "host" not in c.name:
+        print(node["bgp"])
+        bgp_configuration = sp.check_output("sudo docker exec " + c.name + " route -n", shell=True).decode('utf-8').split('\n')
+        result = ""
+        for line in bgp_configuration:
+            result += line + "<br>"
+        node["bgp"] = result
+    print(node)
+    kv["nodes"].append(node)
     links_output = sp.check_output("sudo docker exec " + c.name + 
                             " ip link show | grep UP | grep -v eth0 | grep -v lo | awk -F: '{print $2}' | awk -F@ '{print $1}' | tr -d ' '", shell=True).decode("utf-8")
     links = links_output.split('\n')[:-1]
@@ -49,7 +59,7 @@ for c in client.containers.list():
         }
         
         if "ca" in l:
-            print(l)
+           
             splits = l.split('-')
             cid = ''
             pid = ''
@@ -89,7 +99,6 @@ for c in client.containers.list():
                     "source": "pod-{}-agg-{}".format(pid0, aid0),
                     "target": "pod-{}-edge-{}".format(pid1, eid1),
                 }
-                print("Edge and host: pod-{}-agg-{} to pod-{}-edge-{}".format(pid0, aid0, pid1, eid1))
             else:
                 pid1 = splits[2]
                 eid1 = splits[4]
@@ -99,7 +108,7 @@ for c in client.containers.list():
                     "source": "pod-{}-edge-{}".format(pid1, eid1),
                     "target": "pod-{}-agg-{}".format(pid0, aid0),
                 }
-                print("Edge and host: pod-{}-edge-{} to pod-{}-agg-{}".format(pid1, eid1, pid0, aid0))
+               
         kv["edges"].append(edge)
 for l in client.networks.list():
     if "br-" in l.name: 
