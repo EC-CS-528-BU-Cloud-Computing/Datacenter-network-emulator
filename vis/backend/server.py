@@ -106,13 +106,14 @@ for l in client.networks.list():
         output = sp.check_output(["docker", "inspect", l.name]).decode('utf-8')
         js_object = json.loads(output)[0]
         edge_name = ""
+        print("-------------")
+        print(js_object["Containers"])
         for k, v in js_object["Containers"].items():
-            print(v)
-            print(v["Name"])
             if "edge" in v["Name"]:
                 edge_name = v["Name"]
                 print(edge_name)
-            else:
+        for k, v in js_object["Containers"].items():
+            if "edge" not in v["Name"]:
                 edge = {
                     "source": edge_name,
                     "target": v["Name"]
@@ -125,7 +126,6 @@ for l in client.networks.list():
                 }
                 print(edge)
                 kv["edges"].append(edge)
-print(kv)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
