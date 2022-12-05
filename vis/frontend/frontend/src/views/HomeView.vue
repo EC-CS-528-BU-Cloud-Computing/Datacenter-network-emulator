@@ -23,18 +23,24 @@ export default {
     this.graph = response.data;
     const graph = new G6.Graph({
       container: 'mountNode', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
-      width: 1600, // Number，必须，图的宽度
-      height: 1600, // Number，必须，图的高度
+      width: 2000, // Number，必须，图的宽度
+      height: 2000, // Number，必须，图的高度
       layout: {
         type: 'concentric',
-        center: [800, 500],
+        center: [1000, 1000],
         nodeSize: 100,  
         preventOverlap: true,
         clockwise: true,
         sortBy: "weight"
       },
       modes: {
-        default: ['drag-node'], // 允许拖拽画布、放缩画布、拖拽节点
+        default: ['drag-node', {
+        type: 'tooltip',
+        formatText(model) {
+          return model.bgp;
+        },
+        offset: 10,
+      },], // 允许拖拽画布、放缩画布、拖拽节点
       },
     });
     graph.data(this.graph); // 读取 Step 2 中的数据源到图上
